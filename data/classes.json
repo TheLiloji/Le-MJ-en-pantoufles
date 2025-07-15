@@ -1,0 +1,102 @@
+[
+  {
+    "id": "wizard",
+    "name": "Sorcier",
+    "description": "Maître de la magie arcanique grâce à l'étude et la préparation.",
+    "hitDie": 6,
+    "primaryAbility": ["Intelligence"],
+    "savingThrows": ["Intelligence", "Sagesse"],
+    "skillsCount": 2,
+    "availableSkills": [
+      "Arcanes", "Histoire", "Intuition", "Investigation", "Médecine", "Religion"
+    ],
+    "equipment": {
+      "armor": ["Aucune"],
+      "weapons": ["Dague", "Fléchette", "Fronde", "Bâton", "Arbalète légère"],
+      "tools": [],
+      "savingThrows": ["Intelligence", "Sagesse"]
+    },
+    "spellcasting": {
+      "ability": "Intelligence",
+      "ritual": true,
+      "spellbook": true
+    },
+    "features": [
+      {
+        "level": 1,
+        "name": "Sorts",
+        "description": "Vous connaissez 3 sorts mineurs et 2 sorts de niveau 1."
+      },
+      {
+        "level": 1,
+        "name": "Récupération arcanique",
+        "description": "Récupérez des emplacements de sorts lors d'un repos court."
+      }
+    ]
+  },
+  {
+    "id": "fighter",
+    "name": "Guerrier",
+    "description": "Maître du combat au corps à corps et à distance.",
+    "hitDie": 10,
+    "primaryAbility": ["Force", "Dextérité"],
+    "savingThrows": ["Force", "Constitution"],
+    "skillsCount": 2,
+    "availableSkills": [
+      "Acrobaties", "Dressage", "Athlétisme", "Histoire", "Intuition", "Intimidation", "Perception", "Survie"
+    ],
+    "equipment": {
+      "armor": ["Toutes les armures", "Boucliers"],
+      "weapons": ["Armes courantes", "Armes de guerre"],
+      "tools": [],
+      "savingThrows": ["Force", "Constitution"]
+    },
+    "features": [
+      {
+        "level": 1,
+        "name": "Style de combat",
+        "description": "Choisissez une spécialisation de combat."
+      },
+      {
+        "level": 1,
+        "name": "Second souffle",
+        "description": "Récupérez 1d10+niveau PV par repos court."
+      }
+    ]
+  },
+  {
+    "id": "rogue",
+    "name": "Roublard",
+    "description": "Expert en infiltration, discrétion et attaques sournoises.",
+    "hitDie": 8,
+    "primaryAbility": ["Dextérité"],
+    "savingThrows": ["Dextérité", "Intelligence"],
+    "skillsCount": 4,
+    "availableSkills": [
+      "Acrobaties", "Athlétisme", "Tromperie", "Intuition", "Intimidation", "Investigation", "Perception", "Représentation", "Persuasion", "Escamotage", "Discrétion"
+    ],
+    "equipment": {
+      "armor": ["Armures légères"],
+      "weapons": ["Armes courantes", "Arbalète de poing", "Épée courte", "Épée longue", "Rapière", "Arc court"],
+      "tools": ["Outils de voleur"],
+      "savingThrows": ["Dextérité", "Intelligence"]
+    },
+    "features": [
+      {
+        "level": 1,
+        "name": "Expertise",
+        "description": "Doublez votre bonus de maîtrise pour 2 compétences."
+      },
+      {
+        "level": 1,
+        "name": "Attaque sournoise",
+        "description": "Infligez 1d6 dégâts supplémentaires avec avantage."
+      },
+      {
+        "level": 1,
+        "name": "Jargon des voleurs",
+        "description": "Langage secret des criminels."
+      }
+    ]
+  }
+]

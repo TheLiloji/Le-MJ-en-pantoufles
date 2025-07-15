@@ -1,0 +1,74 @@
+[
+  {
+    "id": "soldier",
+    "name": "Soldat",
+    "description": "Vous avez servi dans une armée, une milice ou une garde.",
+    "skillProficiencies": ["Athlétisme", "Intimidation"],
+    "toolProficiencies": ["Véhicules terrestres", "Jeu d'échecs draconiques"],
+    "languages": 1,
+    "equipment": [
+      "Insigne de grade",
+      "Trophée d'un ennemi vaincu",
+      "Jeu de cartes",
+      "Vêtements communs",
+      "Bourse contenant 10 po"
+    ],
+    "feature": {
+      "name": "Position militaire",
+      "description": "Vous avez un rang militaire de votre service passé. Les soldats loyaux à votre ancienne organisation militaire reconnaissent encore votre autorité et votre influence."
+    }
+  },
+  {
+    "id": "criminal",
+    "name": "Criminel",
+    "description": "Vous êtes un criminel expérimenté avec un historique d'infractions à la loi.",
+    "skillProficiencies": ["Tromperie", "Discrétion"],
+    "toolProficiencies": ["Jeu (un type)", "Outils de voleur"],
+    "languages": 0,
+    "equipment": [
+      "Pied-de-biche",
+      "Vêtements sombres avec capuche",
+      "Bourse contenant 15 po"
+    ],
+    "feature": {
+      "name": "Contact criminel",
+      "description": "Vous avez un contact fiable et digne de confiance qui agit comme votre agent de liaison avec un réseau d'autres criminels."
+    }
+  },
+  {
+    "id": "noble",
+    "name": "Noble",
+    "description": "Vous comprenez la richesse, le pouvoir et les privilèges.",
+    "skillProficiencies": ["Histoire", "Persuasion"],
+    "toolProficiencies": ["Jeu (un type)"],
+    "languages": 1,
+    "equipment": [
+      "Vêtements fins",
+      "Chevalière",
+      "Parchemin de généalogie",
+      "Bourse contenant 25 po"
+    ],
+    "feature": {
+      "name": "Position de privilège",
+      "description": "Grâce à votre noble naissance, les gens sont enclins à penser le meilleur de vous."
+    }
+  },
+  {
+    "id": "folk-hero",
+    "name": "Héros du Peuple",
+    "description": "Vous venez d'un milieu social humble, mais vous êtes destiné à bien plus.",
+    "skillProficiencies": ["Dressage", "Survie"],
+    "toolProficiencies": ["Outils d'artisan (un type)", "Véhicules terrestres"],
+    "languages": 0,
+    "equipment": [
+      "Outils d'artisan",
+      "Pelle",
+      "Vêtements d'artisan",
+      "Bourse contenant 10 po"
+    ],
+    "feature": {
+      "name": "Hospitalité rustique",
+      "description": "Puisque vous venez des rangs du peuple commun, vous vous intégrez facilement parmi eux."
+    }
+  }
+]

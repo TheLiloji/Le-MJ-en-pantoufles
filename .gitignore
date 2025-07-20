@@ -33,3 +33,35 @@ yarn-error.*
 
 # typescript
 *.tsbuildinfo
+
+# local data storage
+*.db
+*.sqlite
+*.sqlite3
+storage/
+data/
+local-storage/
+
+# expo specific
+.expo/
+dist/
+web-build/
+expo-env.d.ts
+
+# react native specific
+android/
+ios/
+*.apk
+*.aab
+*.ipa
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db

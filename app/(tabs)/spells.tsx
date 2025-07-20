@@ -1,57 +1,90 @@
-import { View, Text, StyleSheet, ScrollView, TextInput, TouchableOpacity } from 'react-native';
-import { useState } from 'react';
-import { Search, Zap, Clock, Target } from 'lucide-react-native';
+import { View, Text, StyleSheet, ScrollView, TextInput, TouchableOpacity, Alert } from 'react-native';
+import { useState, useEffect } from 'react';
+import { Search, Plus, BookOpen, Trash2, Edit3, Zap } from 'lucide-react-native';
+import { router } from 'expo-router';
+import { loadGrimoires, Grimoire, deleteGrimoire } from '../../utils/grimoireService';
 
 export default function SpellsScreen() {
   const [searchQuery, setSearchQuery] = useState('');
-  const [selectedLevel, setSelectedLevel] = useState('all');
+  const [grimoires, setGrimoires] = useState<Grimoire[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [deletingGrimoire, setDeletingGrimoire] = useState<string | null>(null);
 
-  const spells = [
-    {
-      id: 1,
-      name: 'Projectile Magique',
-      level: 1,
-      school: 'Évocation',
-      castingTime: '1 action',
-      range: '36 mètres',
-      description: 'Trois fléchettes d\'énergie magique jaillissent...',
-      damage: '1d4+1 force',
-    },
-    {
-      id: 2,
-      name: 'Bouclier',
-      level: 1,
-      school: 'Abjuration',
-      castingTime: '1 réaction',
-      range: 'Personnel',
-      description: 'Une barrière invisible d\'énergie magique...',
-      damage: '+5 CA',
-    },
-    {
-      id: 3,
-      name: 'Boule de Feu',
-      level: 3,
-      school: 'Évocation',
-      castingTime: '1 action',
-      range: '45 mètres',
-      description: 'Une sphère incandescente explose...',
-      damage: '8d6 feu',
-    },
-  ];
+  useEffect(() => {
+    loadGrimoiresData();
+  }, []);
 
-  const levelColors = {
-    1: '#10B981',
-    2: '#3B82F6',
-    3: '#8B5CF6',
-    4: '#F59E0B',
-    5: '#EF4444',
+  const loadGrimoiresData = async () => {
+    try {
+      const data = await loadGrimoires();
+      setGrimoires(data);
+    } catch (error) {
+      console.error('Erreur lors du chargement des grimoires:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const filteredGrimoires = grimoires.filter(grimoire =>
+    grimoire.nom.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    (grimoire.description && grimoire.description.toLowerCase().includes(searchQuery.toLowerCase()))
+  );
+
+  const handleCreateGrimoire = () => {
+    router.push('/grimoires/create');
+  };
+
+  const handleGrimoirePress = (grimoire: Grimoire) => {
+    router.push({
+      pathname: '/grimoires/[id]',
+      params: { id: grimoire.id }
+    });
+  };
+
+  const handleDeleteGrimoire = async (grimoire: Grimoire) => {
+    console.log('handleDeleteGrimoire appelé pour:', grimoire.nom, 'id:', grimoire.id);
+    
+    // Si c'est le premier clic, activer le mode suppression
+    if (deletingGrimoire !== grimoire.id) {
+      setDeletingGrimoire(grimoire.id);
+      // Reset après 3 secondes
+      setTimeout(() => setDeletingGrimoire(null), 3000);
+      return;
+    }
+    
+    // Deuxième clic - confirmer la suppression
+    setDeletingGrimoire(null);
+    console.log('Utilisateur a confirmé la suppression');
+    try {
+      console.log('Appel de deleteGrimoire avec id:', grimoire.id);
+      await deleteGrimoire(grimoire.id);
+      console.log('deleteGrimoire terminé avec succès');
+      console.log('Rechargement des données...');
+      await loadGrimoiresData();
+      console.log('Données rechargées');
+    } catch (error) {
+      console.error('Erreur lors de la suppression:', error);
+      alert('Erreur: Impossible de supprimer le grimoire');
+    }
+  };
+
+  const getTotalSpells = (grimoire: Grimoire): number => {
+    return grimoire.sorts.length;
+  };
+
+  const getTotalSlots = (grimoire: Grimoire): number => {
+    return Object.values(grimoire.emplacements).reduce((total, count) => total + count, 0);
+  };
+
+  const getUsedSlots = (grimoire: Grimoire): number => {
+    return Object.values(grimoire.emplacementsUtilises).reduce((total, count) => total + count, 0);
   };
 
   return (
     <View style={styles.container}>
       <View style={styles.header}>
-        <Text style={styles.title}>Grimoire de Sorts</Text>
-        <Text style={styles.subtitle}>Maîtrisez la magie</Text>
+        <Text style={styles.title}>Grimoires</Text>
+        <Text style={styles.subtitle}>Gérez vos grimoires de sorts</Text>
       </View>
 
       <View style={styles.searchContainer}>
@@ -59,46 +92,86 @@ export default function SpellsScreen() {
           <Search size={20} color="#6B7280" />
           <TextInput
             style={styles.searchInput}
-            placeholder="Rechercher un sort..."
+            placeholder="Rechercher un grimoire..."
             value={searchQuery}
             onChangeText={setSearchQuery}
             placeholderTextColor="#9CA3AF"
           />
         </View>
+        
+        <TouchableOpacity style={styles.addButton} onPress={handleCreateGrimoire}>
+          <Plus size={20} color="#FFFFFF" />
+          <Text style={styles.addButtonText}>Nouveau</Text>
+        </TouchableOpacity>
       </View>
 
-      <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
-        {spells.map((spell) => (
-          <TouchableOpacity key={spell.id} style={styles.spellCard}>
-            <View style={styles.spellHeader}>
-              <View>
-                <Text style={styles.spellName}>{spell.name}</Text>
-                <Text style={styles.spellSchool}>{spell.school}</Text>
-              </View>
-              <View style={[styles.levelBadge, { backgroundColor: levelColors[spell.level] || '#6B7280' }]}>
-                <Text style={styles.levelText}>{spell.level}</Text>
-              </View>
-            </View>
-
-            <Text style={styles.spellDescription}>{spell.description}</Text>
-
-            <View style={styles.spellDetails}>
-              <View style={styles.detailItem}>
-                <Clock size={14} color="#6B7280" />
-                <Text style={styles.detailText}>{spell.castingTime}</Text>
-              </View>
-              <View style={styles.detailItem}>
-                <Target size={14} color="#6B7280" />
-                <Text style={styles.detailText}>{spell.range}</Text>
-              </View>
-              <View style={styles.detailItem}>
-                <Zap size={14} color="#6B7280" />
-                <Text style={styles.detailText}>{spell.damage}</Text>
-              </View>
-            </View>
+      {grimoires.length === 0 ? (
+        <View style={styles.emptyState}>
+          <BookOpen size={64} color="#9CA3AF" />
+          <Text style={styles.emptyStateTitle}>Aucun grimoire</Text>
+          <Text style={styles.emptyStateSubtitle}>
+            Créez votre premier grimoire pour organiser vos sorts
+          </Text>
+          <TouchableOpacity style={styles.emptyStateButton} onPress={handleCreateGrimoire}>
+            <Plus size={20} color="#FFFFFF" />
+            <Text style={styles.emptyStateButtonText}>Créer un grimoire</Text>
           </TouchableOpacity>
-        ))}
-      </ScrollView>
+        </View>
+      ) : (
+        <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
+          {filteredGrimoires.map((grimoire) => (
+            <TouchableOpacity key={grimoire.id} style={styles.grimoireCard} onPress={() => handleGrimoirePress(grimoire)}>
+              <View style={styles.grimoireHeader}>
+                <View style={styles.grimoireInfo}>
+                  <Text style={styles.grimoireName}>{grimoire.nom}</Text>
+                  {grimoire.description && (
+                    <Text style={styles.grimoireDescription}>{grimoire.description}</Text>
+                  )}
+                </View>
+                <TouchableOpacity 
+                  style={[
+                    styles.deleteButton, 
+                    { 
+                      padding: 8, 
+                      backgroundColor: deletingGrimoire === grimoire.id ? '#EF4444' : '#FEE2E2', 
+                      borderRadius: 6 
+                    }
+                  ]}
+                  onPress={(e) => {
+                    e.stopPropagation(); // Empêcher la navigation
+                    console.log('Bouton delete grimoire cliqué pour:', grimoire.nom);
+                    handleDeleteGrimoire(grimoire);
+                  }}
+                >
+                  <Trash2 size={16} color={deletingGrimoire === grimoire.id ? "#FFFFFF" : "#EF4444"} />
+                </TouchableOpacity>
+              </View>
+
+              <View style={styles.grimoireStats}>
+                <View style={styles.statItem}>
+                  <BookOpen size={16} color="#6B7280" />
+                  <Text style={styles.statText}>{getTotalSpells(grimoire)} sorts</Text>
+                </View>
+                <View style={styles.statItem}>
+                  <Zap size={16} color="#6B7280" />
+                  <Text style={styles.statText}>
+                    {getUsedSlots(grimoire)}/{getTotalSlots(grimoire)} emplacements
+                  </Text>
+                </View>
+              </View>
+
+              <View style={styles.grimoireFooter}>
+                <Text style={styles.dateText}>
+                  Créé le {new Date(grimoire.dateCreation).toLocaleDateString('fr-FR')}
+                </Text>
+                <Text style={styles.dateText}>
+                  Modifié le {new Date(grimoire.dateModification).toLocaleDateString('fr-FR')}
+                </Text>
+              </View>
+            </TouchableOpacity>
+          ))}
+        </ScrollView>
+      )}
     </View>
   );
 }
@@ -131,8 +204,11 @@ const styles = StyleSheet.create({
   searchContainer: {
     paddingHorizontal: 20,
     paddingTop: 20,
+    flexDirection: 'row',
+    alignItems: 'center',
   },
   searchBox: {
+    flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: '#FFFFFF',
@@ -154,12 +230,70 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: '#374151',
   },
+  addButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#DC2626',
+    borderRadius: 12,
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    marginLeft: 12,
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 1,
+    },
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  addButtonText: {
+    color: '#FFFFFF',
+    fontSize: 14,
+    fontWeight: '600',
+    marginLeft: 6,
+  },
+  emptyState: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: 40,
+  },
+  emptyStateTitle: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: '#374151',
+    marginTop: 16,
+    textAlign: 'center',
+  },
+  emptyStateSubtitle: {
+    fontSize: 16,
+    color: '#6B7280',
+    marginTop: 8,
+    textAlign: 'center',
+    lineHeight: 24,
+  },
+  emptyStateButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#DC2626',
+    borderRadius: 12,
+    paddingHorizontal: 20,
+    paddingVertical: 12,
+    marginTop: 20,
+  },
+  emptyStateButtonText: {
+    color: '#FFFFFF',
+    fontSize: 16,
+    fontWeight: '600',
+    marginLeft: 8,
+  },
   scrollView: {
     flex: 1,
     paddingHorizontal: 20,
     paddingTop: 20,
   },
-  spellCard: {
+  grimoireCard: {
     backgroundColor: '#FFFFFF',
     borderRadius: 16,
     padding: 20,
@@ -175,58 +309,58 @@ const styles = StyleSheet.create({
     borderLeftWidth: 4,
     borderLeftColor: '#DC2626',
   },
-  spellHeader: {
+  grimoireHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'flex-start',
     marginBottom: 12,
   },
-  spellName: {
+  grimoireInfo: {
+    flex: 1,
+  },
+  grimoireName: {
     fontSize: 18,
     fontWeight: 'bold',
     color: '#1F2937',
     marginBottom: 4,
   },
-  spellSchool: {
+  grimoireDescription: {
     fontSize: 14,
     color: '#6B7280',
-  },
-  levelBadge: {
-    borderRadius: 20,
-    width: 32,
-    height: 32,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  levelText: {
-    fontSize: 14,
-    fontWeight: 'bold',
-    color: '#FFFFFF',
-  },
-  spellDescription: {
-    fontSize: 14,
-    color: '#4B5563',
     lineHeight: 20,
-    marginBottom: 16,
   },
-  spellDetails: {
+  deleteButton: {
+    padding: 8,
+    borderRadius: 8,
+    backgroundColor: '#FEF2F2',
+  },
+  grimoireStats: {
     flexDirection: 'row',
     justifyContent: 'space-between',
+    marginBottom: 12,
   },
-  detailItem: {
+  statItem: {
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: '#F9FAFB',
-    paddingHorizontal: 8,
-    paddingVertical: 6,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
     borderRadius: 8,
     flex: 1,
-    marginHorizontal: 2,
+    marginHorizontal: 4,
   },
-  detailText: {
+  statText: {
     fontSize: 12,
     color: '#374151',
-    marginLeft: 4,
+    marginLeft: 6,
     fontWeight: '500',
+  },
+  grimoireFooter: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+  },
+  dateText: {
+    fontSize: 11,
+    color: '#9CA3AF',
   },
 });

@@ -249,7 +249,15 @@ export default function AddSpellToGrimoireScreen() {
           </View>
         ) : (
           filteredSpells.map((spell) => (
-            <View key={spell.nom} style={styles.spellCard}>
+            <TouchableOpacity 
+              key={spell.nom} 
+              style={styles.spellCard}
+              activeOpacity={0.7}
+              onPress={() => router.push({
+                pathname: '/grimoires/[id]/spell/[spellId]',
+                params: { id, spellId: spell.nom + '-' + spell.niveau }
+              })}
+            >
               <View style={styles.spellHeader}>
                 <View style={styles.spellInfo}>
                   <Text style={styles.spellName}>{spell.nom}</Text>
@@ -264,7 +272,10 @@ export default function AddSpellToGrimoireScreen() {
                        isSpellInGrimoire(spell) ? styles.removeButton : styles.addButton,
                        isSpellInGrimoire(spell) && styles.removeButtonActive
                      ]}
-                     onPress={() => isSpellInGrimoire(spell) ? handleRemoveSpell(spell) : handleAddSpell(spell)}
+                     onPress={(e) => {
+                       e.stopPropagation(); // Empêcher la navigation
+                       isSpellInGrimoire(spell) ? handleRemoveSpell(spell) : handleAddSpell(spell);
+                     }}
                    >
                      {isSpellInGrimoire(spell) ? (
                        <Minus size={16} color="#FFFFFF" />
@@ -327,7 +338,7 @@ export default function AddSpellToGrimoireScreen() {
                      )}
                    </View>
                  )}
-            </View>
+            </TouchableOpacity>
           ))
         )}
       </ScrollView>

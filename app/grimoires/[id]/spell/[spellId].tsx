@@ -3,7 +3,7 @@ import { useState, useEffect } from 'react';
 import { ArrowLeft, ExternalLink, Zap, Clock, Target, BookOpen, Users, Tag } from 'lucide-react-native';
 import { router, useLocalSearchParams } from 'expo-router';
 import { loadGrimoires, Grimoire, GrimoireSpell } from '../../../../utils/grimoireService';
-import { isValidDisplayString } from '../../../../utils/spellsService';
+import { isValidDisplayString, loadAllSpells, Spell } from '../../../../utils/spellsService';
 
 export default function SpellDetailScreen() {
   const { id, spellId } = useLocalSearchParams<{ id: string; spellId: string }>();
@@ -21,12 +21,40 @@ export default function SpellDetailScreen() {
       const foundGrimoire = grimoires.find(g => g.id === id);
       if (foundGrimoire) {
         setGrimoire(foundGrimoire);
+        
+        // D'abord chercher dans le grimoire
         const foundSpell = foundGrimoire.sorts.find(s => s.spellId === spellId);
         if (foundSpell) {
           setSpell(foundSpell);
         } else {
-          Alert.alert('Erreur', 'Sort non trouvé');
-          router.back();
+          // Si pas trouvé dans le grimoire, chercher dans tous les sorts
+          const allSpells = loadAllSpells();
+          const [spellName, spellLevel] = spellId.split('-');
+          const foundSpellInAll = allSpells.find((s: Spell) => 
+            s.nom === spellName && s.niveau === spellLevel
+          );
+          
+          if (foundSpellInAll) {
+            // Convertir le sort en GrimoireSpell
+            const grimoireSpell: GrimoireSpell = {
+              spellId: spellId,
+              nom: foundSpellInAll.nom,
+              niveau: foundSpellInAll.niveau,
+              ecole: foundSpellInAll.ecole,
+              description: foundSpellInAll.description,
+              temps_incantation: foundSpellInAll.temps_incantation,
+              portee: foundSpellInAll.portee,
+              composantes: foundSpellInAll.composantes,
+              concentration: foundSpellInAll.concentration,
+              rituel: foundSpellInAll.rituel,
+              classes: foundSpellInAll.classes || [],
+              url: foundSpellInAll.url,
+            };
+            setSpell(grimoireSpell);
+          } else {
+            Alert.alert('Erreur', 'Sort non trouvé');
+            router.back();
+          }
         }
       } else {
         Alert.alert('Erreur', 'Grimoire non trouvé');

@@ -66,15 +66,6 @@ export function getMainSections(): SectionItem[] {
       hasSubsections: true,
     },
     {
-      id: 'bestiaire',
-      title: 'Bestiaire',
-      description: 'Créatures et monstres avec stats complètes',
-      icon: 'skull',
-      count: '200+ créatures',
-      color: '#059669',
-      hasSubsections: true,
-    },
-    {
       id: 'equipement-d-aventurier',
       title: 'Équipement',
       description: 'Armes, armures et équipement d\'aventurier',

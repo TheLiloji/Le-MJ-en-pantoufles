@@ -31,6 +31,8 @@ export default function CharactersScreen() {
     router.push('/create');
   };
 
+
+
   return (
     <View style={styles.container}>
       <View style={styles.header}>
@@ -192,4 +194,5 @@ const styles = StyleSheet.create({
     color: '#FFFFFF',
     marginLeft: 8,
   },
+
 });

@@ -1,5 +1,5 @@
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
-import { BookOpen, Users, Dice1, Sword, Map, Shield, Zap, Heart, Target, Scroll, Gem, Crown, Star, Flame, Droplets, Leaf, Mountain, Eye, Brain, Skull, Sparkles, Book, Hammer, Cross, Shield as ShieldIcon, ArrowLeft, ArrowRight, FileText, FolderOpen } from 'lucide-react-native';
+import { BookOpen, Users, Dice1, Sword, Map, Shield, Zap, Heart, Target, Scroll, Gem, Crown, Star, Flame, Droplets, Leaf, Mountain, Eye, Brain, Skull, Sparkles, Book, Hammer, Cross, Shield as ShieldIcon, ArrowLeft, ArrowRight, FileText, FolderOpen, Zap as ZapIcon } from 'lucide-react-native';
 import { useState } from 'react';
 import { router } from 'expo-router';
 import { getMainSections, getSubsections, hasSubsections } from '../../utils/sectionHierarchy';
@@ -37,6 +37,10 @@ export default function GrimoireScreen() {
 
   const handleSubsectionsPress = (sectionId: string) => {
     setShowSubsections(true);
+  };
+
+  const handleBestiaryPress = () => {
+    router.push('/bestiary');
   };
 
   // Vérifier si une section a du contenu principal
@@ -114,6 +118,18 @@ export default function GrimoireScreen() {
       </View>
 
       <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
+        <TouchableOpacity style={styles.bestiaryCard} onPress={handleBestiaryPress}>
+          <View style={styles.bestiaryIconContainer}>
+            <ZapIcon size={32} color="#FFFFFF" />
+          </View>
+          <View style={styles.bestiaryContent}>
+            <Text style={styles.bestiaryTitle}>Bestiaire D&D</Text>
+            <Text style={styles.bestiaryDescription}>
+              Explorez toutes les créatures et monstres de D&D 5e avec images et statistiques détaillées
+            </Text>
+          </View>
+        </TouchableOpacity>
+
         <Text style={styles.sectionTitle}>Ressources Disponibles</Text>
         
         {mainSections.map((section) => (
@@ -499,5 +515,46 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: '#6B21A8',
     lineHeight: 20,
+  },
+  bestiaryCard: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 16,
+    padding: 20,
+    marginBottom: 16,
+    flexDirection: 'row',
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
+    elevation: 4,
+    borderLeftWidth: 4,
+    borderLeftColor: '#10B981',
+  },
+  bestiaryIconContainer: {
+    width: 56,
+    height: 56,
+    borderRadius: 16,
+    backgroundColor: '#10B981',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 16,
+  },
+  bestiaryContent: {
+    flex: 1,
+  },
+  bestiaryTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#1F2937',
+    marginBottom: 4,
+  },
+  bestiaryDescription: {
+    fontSize: 14,
+    color: '#6B7280',
+    lineHeight: 18,
   },
 });

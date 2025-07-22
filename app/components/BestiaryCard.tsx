@@ -1,332 +1,221 @@
-import React, { useState } from 'react';
-import { View, Text, StyleSheet, Image, ScrollView, TouchableOpacity, Modal } from 'react-native';
+import React, { useState, memo, useCallback } from 'react';
+import { View, Text, StyleSheet, TouchableOpacity, Modal, Dimensions } from 'react-native';
+import { Creature } from '../../types/bestiary';
+import OptimizedImage from './OptimizedImage';
 
 interface BestiaryCardProps {
-  creature: {
-    nom: string;
-    type: string;
-    taille: string;
-    alignement: string;
-    ca: string;
-    pv: string;
-    vitesse: string;
-    fp: string;
-    caracs: {
-      FOR: string;
-      DEX: string;
-      CON: string;
-      INT: string;
-      SAG: string;
-      CHA: string;
-    };
-    actions: string;
-    actions_legendaires: string;
-    image_url?: string | null;
-    ca_detail?: string;
-    autres_infos?: string[];
-  };
+  creature: Creature;
+  onPress?: () => void;
 }
 
-export default function BestiaryCard({ creature }: BestiaryCardProps) {
+const { width } = Dimensions.get('window');
+
+// Memoized component to prevent unnecessary re-renders
+const BestiaryCard = memo<BestiaryCardProps>(({ creature, onPress }) => {
   const [imageModalVisible, setImageModalVisible] = useState(false);
 
-  const getModifier = (score: string) => {
+  const getModifier = useCallback((score: string) => {
     const match = score.match(/\(([^)]+)\)/);
     return match ? match[1] : '';
-  };
+  }, []);
 
-  const getScore = (score: string) => {
+  const getScore = useCallback((score: string) => {
     const match = score.match(/^(\d+)/);
     return match ? match[1] : '';
-  };
+  }, []);
 
-  const handleImagePress = () => {
+  const handleImagePress = useCallback(() => {
     if (creature.image_url) {
       setImageModalVisible(true);
     }
-  };
+  }, [creature.image_url]);
+
+  const handleCardPress = useCallback(() => {
+    onPress?.();
+  }, [onPress]);
 
   return (
-    <ScrollView style={styles.container}>
-      <View style={styles.card}>
-        {/* En-tête avec image */}
-        <View style={styles.header}>
-          <View style={styles.titleContainer}>
-            <Text style={styles.title}>{creature.nom}</Text>
-            <Text style={styles.subtitle}>
-              {creature.type} de taille {creature.taille}, {creature.alignement}
-            </Text>
-          </View>
-          {creature.image_url && (
-            <TouchableOpacity onPress={handleImagePress}>
-              <Image 
-                source={{ uri: creature.image_url }} 
-                style={styles.image}
-                resizeMode="cover"
-              />
-            </TouchableOpacity>
-          )}
-        </View>
-
-        {/* Statistiques principales */}
-        <View style={styles.statsContainer}>
-          <View style={styles.statRow}>
-            <Text style={styles.statLabel}>Classe d'armure</Text>
-            <Text style={styles.statValue}>{creature.ca}</Text>
-          </View>
-          <View style={styles.statRow}>
-            <Text style={styles.statLabel}>Points de vie</Text>
-            <Text style={styles.statValue}>{creature.pv}</Text>
-          </View>
-          <View style={styles.statRow}>
-            <Text style={styles.statLabel}>Vitesse</Text>
-            <Text style={styles.statValue}>{creature.vitesse}</Text>
-          </View>
-          <View style={styles.statRow}>
-            <Text style={styles.statLabel}>Puissance</Text>
-            <Text style={styles.statValue}>{creature.fp}</Text>
-          </View>
-        </View>
-
-        {/* Caractéristiques */}
-        <View style={styles.characteristicsContainer}>
-          <Text style={styles.sectionTitle}>Caractéristiques</Text>
-          <View style={styles.characteristicsGrid}>
-            <View style={styles.characteristicItem}>
-              <Text style={styles.characteristicLabel}>FOR</Text>
-              <Text style={styles.characteristicScore}>{getScore(creature.caracs.FOR)}</Text>
-              <Text style={styles.characteristicModifier}>{getModifier(creature.caracs.FOR)}</Text>
-            </View>
-            <View style={styles.characteristicItem}>
-              <Text style={styles.characteristicLabel}>DEX</Text>
-              <Text style={styles.characteristicScore}>{getScore(creature.caracs.DEX)}</Text>
-              <Text style={styles.characteristicModifier}>{getModifier(creature.caracs.DEX)}</Text>
-            </View>
-            <View style={styles.characteristicItem}>
-              <Text style={styles.characteristicLabel}>CON</Text>
-              <Text style={styles.characteristicScore}>{getScore(creature.caracs.CON)}</Text>
-              <Text style={styles.characteristicModifier}>{getModifier(creature.caracs.CON)}</Text>
-            </View>
-            <View style={styles.characteristicItem}>
-              <Text style={styles.characteristicLabel}>INT</Text>
-              <Text style={styles.characteristicScore}>{getScore(creature.caracs.INT)}</Text>
-              <Text style={styles.characteristicModifier}>{getModifier(creature.caracs.INT)}</Text>
-            </View>
-            <View style={styles.characteristicItem}>
-              <Text style={styles.characteristicLabel}>SAG</Text>
-              <Text style={styles.characteristicScore}>{getScore(creature.caracs.SAG)}</Text>
-              <Text style={styles.characteristicModifier}>{getModifier(creature.caracs.SAG)}</Text>
-            </View>
-            <View style={styles.characteristicItem}>
-              <Text style={styles.characteristicLabel}>CHA</Text>
-              <Text style={styles.characteristicScore}>{getScore(creature.caracs.CHA)}</Text>
-              <Text style={styles.characteristicModifier}>{getModifier(creature.caracs.CHA)}</Text>
-            </View>
-          </View>
-        </View>
-
-        {/* Actions */}
-        {creature.actions && (
-          <View style={styles.actionsContainer}>
-            <Text style={styles.sectionTitle}>Actions</Text>
-            <Text style={styles.actionsText}>{creature.actions}</Text>
-          </View>
-        )}
-
-        {/* Actions légendaires */}
-        {creature.actions_legendaires && (
-          <View style={styles.legendaryContainer}>
-            <Text style={styles.sectionTitle}>Actions légendaires</Text>
-            <Text style={styles.legendaryText}>{creature.actions_legendaires}</Text>
-          </View>
-        )}
-
-        {/* Détails de CA - Commenté pour simplifier l'affichage */}
-        {/* {creature.ca_detail && (
-          <View style={styles.detailsContainer}>
-            <Text style={styles.sectionTitle}>Détails</Text>
-            <Text style={styles.detailsText}>{creature.ca_detail}</Text>
-          </View>
-        )} */}
+    <TouchableOpacity style={styles.container} onPress={handleCardPress} activeOpacity={0.7}>
+      <View style={styles.header}>
+        <Text style={styles.name}>{creature.nom}</Text>
+        <Text style={styles.type}>{creature.type} ({creature.taille}), {creature.alignement}</Text>
       </View>
 
-      {/* Modal pour l'image en grand */}
+      <View style={styles.row}>
+        <View style={styles.statGroup}>
+          <Text style={styles.statLabel}>CA</Text>
+          <Text style={styles.statValue}>{creature.ca}</Text>
+        </View>
+        <View style={styles.statGroup}>
+          <Text style={styles.statLabel}>PV</Text>
+          <Text style={styles.statValue}>{creature.pv}</Text>
+        </View>
+        <View style={styles.statGroup}>
+          <Text style={styles.statLabel}>Vitesse</Text>
+          <Text style={styles.statValue}>{creature.vitesse}</Text>
+        </View>
+        <View style={styles.statGroup}>
+          <Text style={styles.statLabel}>FP</Text>
+          <Text style={styles.statValue}>{creature.fp}</Text>
+        </View>
+      </View>
+
+      <View style={styles.caracteristiques}>
+        {Object.entries(creature.caracs).map(([key, value]) => (
+          <View key={key} style={styles.caracItem}>
+            <Text style={styles.caracLabel}>{key}</Text>
+            <Text style={styles.caracScore}>{getScore(value)}</Text>
+            <Text style={styles.caracModifier}>{getModifier(value)}</Text>
+          </View>
+        ))}
+      </View>
+
+      {creature.image_url && (
+        <TouchableOpacity onPress={handleImagePress} style={styles.imageContainer}>
+          <OptimizedImage 
+            uri={creature.image_url} 
+            width={100}
+            height={100}
+            borderRadius={8}
+            cache="force-cache"
+          />
+        </TouchableOpacity>
+      )}
+
+      {/* Simplified modal for better performance */}
       <Modal
         visible={imageModalVisible}
         transparent={true}
         animationType="fade"
         onRequestClose={() => setImageModalVisible(false)}
       >
-        <View style={styles.modalOverlay}>
-          <TouchableOpacity 
-            style={styles.modalCloseButton}
-            onPress={() => setImageModalVisible(false)}
-          >
-            <Text style={styles.modalCloseText}>✕</Text>
-          </TouchableOpacity>
-          {creature.image_url && (
-            <Image 
-              source={{ uri: creature.image_url }} 
-              style={styles.modalImage}
-              resizeMode="contain"
-            />
-          )}
-        </View>
+        <TouchableOpacity 
+          style={styles.modalOverlay} 
+          onPress={() => setImageModalVisible(false)}
+          activeOpacity={1}
+        >
+                   <View style={styles.modalContent}>
+           {creature.image_url && (
+             <OptimizedImage 
+               uri={creature.image_url} 
+               width={width * 0.8}
+               height={width * 0.8}
+               borderRadius={8}
+               cache="force-cache"
+               showLoadingIndicator={true}
+             />
+           )}
+         </View>
+        </TouchableOpacity>
       </Modal>
-    </ScrollView>
+    </TouchableOpacity>
   );
-}
+});
+
+BestiaryCard.displayName = 'BestiaryCard';
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
-    backgroundColor: '#F8FAFC',
-  },
-  card: {
-    margin: 16,
-    elevation: 4,
+    backgroundColor: '#2D3748',
     borderRadius: 12,
+    padding: 16,
+    marginBottom: 12,
+    marginHorizontal: 16,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
   },
   header: {
-    flexDirection: 'row',
-    padding: 16,
-    borderBottomWidth: 1,
-    borderBottomColor: '#E5E7EB',
+    marginBottom: 12,
   },
-  titleContainer: {
-    flex: 1,
-  },
-  title: {
-    fontSize: 24,
+  name: {
+    fontSize: 20,
     fontWeight: 'bold',
-    color: '#1F2937',
+    color: '#FFFFFF',
     marginBottom: 4,
   },
-  subtitle: {
+  type: {
     fontSize: 14,
-    color: '#6B7280',
+    color: '#A0AEC0',
     fontStyle: 'italic',
   },
-  image: {
-    width: 80,
-    height: 80,
-    borderRadius: 8,
-    marginLeft: 12,
-  },
-  statsContainer: {
-    padding: 16,
-    borderBottomWidth: 1,
-    borderBottomColor: '#E5E7EB',
-  },
-  statRow: {
+  row: {
     flexDirection: 'row',
     justifyContent: 'space-between',
+    marginBottom: 16,
+  },
+  statGroup: {
     alignItems: 'center',
-    paddingVertical: 4,
+    flex: 1,
   },
   statLabel: {
-    fontSize: 16,
-    color: '#374151',
-    fontWeight: '500',
+    fontSize: 12,
+    color: '#A0AEC0',
+    marginBottom: 2,
   },
   statValue: {
     fontSize: 16,
-    color: '#1F2937',
     fontWeight: 'bold',
+    color: '#FFFFFF',
   },
-  characteristicsContainer: {
-    padding: 16,
-    borderBottomWidth: 1,
-    borderBottomColor: '#E5E7EB',
-  },
-  sectionTitle: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: '#1F2937',
+  caracteristiques: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    backgroundColor: '#1A202C',
+    borderRadius: 8,
+    padding: 12,
     marginBottom: 12,
   },
-  characteristicsGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    justifyContent: 'space-between',
-  },
-  characteristicItem: {
-    width: '30%',
+  caracItem: {
     alignItems: 'center',
-    paddingVertical: 8,
-    backgroundColor: '#F3F4F6',
+    flex: 1,
+  },
+  caracLabel: {
+    fontSize: 10,
+    color: '#A0AEC0',
+    marginBottom: 2,
+  },
+  caracScore: {
+    fontSize: 14,
+    fontWeight: 'bold',
+    color: '#FFFFFF',
+    marginBottom: 2,
+  },
+  caracModifier: {
+    fontSize: 12,
+    color: '#A0AEC0',
+  },
+  imageContainer: {
+    alignItems: 'center',
+    marginTop: 8,
+  },
+  creatureImage: {
+    width: 100,
+    height: 100,
     borderRadius: 8,
-    marginBottom: 8,
-  },
-  characteristicLabel: {
-    fontSize: 12,
-    fontWeight: 'bold',
-    color: '#6B7280',
-    textTransform: 'uppercase',
-  },
-  characteristicScore: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: '#1F2937',
-  },
-  characteristicModifier: {
-    fontSize: 12,
-    color: '#6B7280',
-  },
-  actionsContainer: {
-    padding: 16,
-    borderBottomWidth: 1,
-    borderBottomColor: '#E5E7EB',
-  },
-  actionsText: {
-    fontSize: 14,
-    color: '#374151',
-    lineHeight: 20,
-  },
-  legendaryContainer: {
-    padding: 16,
-    borderBottomWidth: 1,
-    borderBottomColor: '#E5E7EB',
-  },
-  legendaryText: {
-    fontSize: 14,
-    color: '#374151',
-    lineHeight: 20,
-  },
-  detailsContainer: {
-    padding: 16,
-  },
-  detailsText: {
-    fontSize: 14,
-    color: '#374151',
-    lineHeight: 20,
+    resizeMode: 'cover',
   },
   modalOverlay: {
     flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.9)',
+    backgroundColor: 'rgba(0, 0, 0, 0.8)',
     justifyContent: 'center',
     alignItems: 'center',
   },
-  modalCloseButton: {
-    position: 'absolute',
-    top: 50,
-    right: 20,
-    zIndex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
-    borderRadius: 20,
-    width: 40,
-    height: 40,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  modalCloseText: {
-    color: '#FFFFFF',
-    fontSize: 20,
-    fontWeight: 'bold',
+  modalContent: {
+    backgroundColor: '#2D3748',
+    borderRadius: 12,
+    padding: 20,
+    maxWidth: width * 0.9,
+    maxHeight: width * 0.9,
   },
   modalImage: {
-    width: '90%',
-    height: '80%',
-    borderRadius: 12,
+    width: width * 0.8,
+    height: width * 0.8,
+    borderRadius: 8,
+    resizeMode: 'contain',
   },
-}); 
+});
+
+export default BestiaryCard; 

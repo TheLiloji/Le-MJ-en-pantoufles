@@ -1,4 +1,5 @@
-import spellsData from '../data/sorts_dnd_fr.json';
+// Lazy import for better code splitting
+let spellsData: Spell[] | null = null;
 
 export interface Spell {
   nom: string;
@@ -11,153 +12,173 @@ export interface Spell {
   rituel: string;
   description: string;
   url: string;
-  classes?: string[];
+  classes: string[];
 }
 
-export interface SavedSpell extends Spell {
-  id: string;
-  dateAdded: string;
+// Cache for expensive operations
+const spellSearchCache = new Map<string, Spell[]>();
+const schoolCache = new Map<string, Spell[]>();
+const levelCache = new Map<number, Spell[]>();
+let allSchoolsCache: string[] | null = null;
+
+/**
+ * Lazy load spells data only when needed
+ */
+async function loadSpellsData(): Promise<Spell[]> {
+  if (spellsData === null) {
+    // Dynamic import for code splitting
+    const module = await import('../data/sorts_dnd_fr.json');
+    spellsData = module.default;
+  }
+  return spellsData;
 }
 
-let savedSpells: SavedSpell[] = [];
-
-export const loadAllSpells = (): Spell[] => {
-  const spells = spellsData as Spell[];
-  // Nettoyer les données pour éviter les chaînes vides
-  return spells.map(spell => {
-    return {
-      ...spell,
-      concentration: spell.concentration?.trim() || '',
-      rituel: spell.rituel?.trim() || '',
-      nom: spell.nom?.trim() || '',
-      ecole: spell.ecole?.trim() || '',
-      temps_incantation: spell.temps_incantation?.trim() || '',
-      portee: spell.portee?.trim() || '',
-      composantes: spell.composantes?.trim() || '',
-      description: spell.description?.trim() || '',
-      url: spell.url?.trim() || '',
-      niveau: spell.niveau?.trim() || '0',
-      classes: spell.classes || [],
-    };
-  }).filter(spell => 
-    spell.nom && 
-    spell.nom.length > 0 && 
-    spell.description && 
-    spell.description.length > 0
-  ).map(spell => {
-    // Nettoyer encore plus strictement les chaînes vides
-    const cleanSpell = { ...spell };
-    
-    // Remplacer les chaînes qui ne contiennent que des espaces ou des points par des chaînes vides
-    const cleanString = (str: string) => {
-      if (!str) return '';
-      const trimmed = str.trim();
-      // Si après trim c'est vide ou ne contient que des points/espaces
-      if (!trimmed || /^[.\s]+$/.test(trimmed) || trimmed === '.') return '';
-      return trimmed;
-    };
-    
-    cleanSpell.concentration = cleanString(spell.concentration);
-    cleanSpell.rituel = cleanString(spell.rituel);
-    cleanSpell.temps_incantation = cleanString(spell.temps_incantation);
-    cleanSpell.portee = cleanString(spell.portee);
-    cleanSpell.composantes = cleanString(spell.composantes);
-    cleanSpell.description = cleanString(spell.description);
-    cleanSpell.url = cleanString(spell.url);
-    
-    return cleanSpell;
-  });
+/**
+ * Charge tous les sorts avec cache
+ */
+export const loadAllSpells = async (): Promise<Spell[]> => {
+  return await loadSpellsData();
 };
 
-// Fonction utilitaire pour vérifier si une chaîne est valide pour l'affichage
-export const isValidDisplayString = (str: string | undefined | null): boolean => {
-  if (!str) return false;
-  const trimmed = str.trim();
-  if (!trimmed || trimmed.length === 0) return false;
-  if (trimmed === '.') return false;
-  if (/^[.\s]+$/.test(trimmed)) return false;
-  return true;
+/**
+ * Version synchrone pour la compatibilité ascendante
+ * @deprecated Utilisez loadAllSpells() async à la place
+ */
+export const loadAllSpellsSync = (): Spell[] => {
+  if (spellsData === null) {
+    // Fallback synchrone - attention aux performances
+    const spellsDataSync = require('../data/sorts_dnd_fr.json');
+    spellsData = spellsDataSync as Spell[];
+  }
+  return spellsData;
 };
 
-// Cette fonction n'est plus nécessaire car les classes viennent directement du JSON
-// const getClassesBySchool = (school: string): string[] => {
-//   // Supprimé car on utilise maintenant les vraies classes du JSON
-// };
-
-export const searchSpells = (query: string): Spell[] => {
-  const spells = loadAllSpells();
-  const searchTerm = query.toLowerCase();
+/**
+ * Recherche de sorts par nom avec cache
+ */
+export const searchSpellsByName = async (name: string): Promise<Spell[]> => {
+  const cacheKey = `name_${name.toLowerCase().trim()}`;
   
+  if (spellSearchCache.has(cacheKey)) {
+    return spellSearchCache.get(cacheKey)!;
+  }
+  
+  const spells = await loadSpellsData();
+  const results = spells.filter(spell => 
+    spell.nom.toLowerCase().includes(name.toLowerCase())
+  );
+  
+  spellSearchCache.set(cacheKey, results);
+  return results;
+};
+
+/**
+ * Filtre les sorts par niveau avec cache
+ */
+export const filterSpellsByLevel = async (level: number): Promise<Spell[]> => {
+  if (levelCache.has(level)) {
+    return levelCache.get(level)!;
+  }
+  
+  const spells = await loadSpellsData();
+  const results = spells.filter(spell => spell.niveau === level);
+  
+  levelCache.set(level, results);
+  return results;
+};
+
+/**
+ * Filtre les sorts par école avec cache
+ */
+export const filterSpellsBySchool = async (school: string): Promise<Spell[]> => {
+  const cacheKey = school.toLowerCase();
+  
+  if (schoolCache.has(cacheKey)) {
+    return schoolCache.get(cacheKey)!;
+  }
+  
+  const spells = await loadSpellsData();
+  const results = spells.filter(spell => 
+    spell.ecole.toLowerCase() === school.toLowerCase()
+  );
+  
+  schoolCache.set(cacheKey, results);
+  return results;
+};
+
+/**
+ * Filtre les sorts par classe
+ */
+export const filterSpellsByClass = async (className: string): Promise<Spell[]> => {
+  const spells = await loadSpellsData();
   return spells.filter(spell => 
-    spell.nom.toLowerCase().includes(searchTerm) ||
-    spell.ecole.toLowerCase().includes(searchTerm) ||
-    spell.description.toLowerCase().includes(searchTerm) ||
-    (spell.classes && spell.classes.some(c => c.toLowerCase().includes(searchTerm)))
+    spell.classes.some(c => c.toLowerCase().includes(className.toLowerCase()))
   );
 };
 
-export const getSpellByLevel = (level: string): Spell[] => {
-  const spells = loadAllSpells();
-  return spells.filter(spell => spell.niveau === level);
-};
-
-export const getSpellBySchool = (school: string): Spell[] => {
-  const spells = loadAllSpells();
-  return spells.filter(spell => spell.ecole.toLowerCase() === school.toLowerCase());
-};
-
-export const getSpellByClass = (className: string): Spell[] => {
-  const spells = loadAllSpells();
-  return spells.filter(spell => {
-    if (!spell.classes) return false;
-    return spell.classes.some(c => c.toLowerCase() === className.toLowerCase());
-  });
-};
-
-export const getAvailableClasses = (): string[] => {
-  const spells = loadAllSpells();
-  const allClasses = new Set<string>();
-  
-  spells.forEach(spell => {
-    if (spell.classes) {
-      spell.classes.forEach(className => {
-        if (className && className.trim()) {
-          allClasses.add(className.trim());
-        }
-      });
-    }
-  });
-  
-  return Array.from(allClasses).sort();
-};
-
-export const getSpellsByClassAndLevel = (className: string, level: string): Spell[] => {
-  const spells = getSpellByClass(className);
-  return spells.filter(spell => spell.niveau === level);
-};
-
-export const addSpellToSaved = (spell: Spell): void => {
-  const savedSpell: SavedSpell = {
-    ...spell,
-    id: Date.now().toString(),
-    dateAdded: new Date().toISOString()
-  };
-  
-  // Vérifier si le sort n'est pas déjà sauvegardé
-  const exists = savedSpells.find(s => s.nom === spell.nom);
-  if (!exists) {
-    savedSpells.push(savedSpell);
+/**
+ * Obtient toutes les écoles de magie avec cache
+ */
+export const getSpellSchools = async (): Promise<string[]> => {
+  if (allSchoolsCache !== null) {
+    return allSchoolsCache;
   }
+  
+  const spells = await loadSpellsData();
+  const schools = new Set(spells.map(spell => spell.ecole));
+  allSchoolsCache = Array.from(schools).sort();
+  return allSchoolsCache;
 };
 
-export const removeSpellFromSaved = (spellId: string): void => {
-  savedSpells = savedSpells.filter(spell => spell.id !== spellId);
+/**
+ * Recherche avancée avec filtres multiples et cache
+ */
+export const searchSpells = async (filters: {
+  name?: string;
+  level?: number;
+  school?: string;
+  className?: string;
+}): Promise<Spell[]> => {
+  const cacheKey = JSON.stringify(filters);
+  
+  if (spellSearchCache.has(cacheKey)) {
+    return spellSearchCache.get(cacheKey)!;
+  }
+  
+  let spells = await loadSpellsData();
+  
+  if (filters.name) {
+    spells = spells.filter(spell => 
+      spell.nom.toLowerCase().includes(filters.name!.toLowerCase())
+    );
+  }
+  
+  if (filters.level !== undefined) {
+    spells = spells.filter(spell => spell.niveau === filters.level);
+  }
+  
+  if (filters.school) {
+    spells = spells.filter(spell => 
+      spell.ecole.toLowerCase() === filters.school!.toLowerCase()
+    );
+  }
+  
+  if (filters.className) {
+    spells = spells.filter(spell => 
+      spell.classes.some(c => c.toLowerCase().includes(filters.className!.toLowerCase()))
+    );
+  }
+  
+  spellSearchCache.set(cacheKey, spells);
+  return spells;
 };
 
-export const getSavedSpells = (): SavedSpell[] => {
-  return [...savedSpells];
-};
-
-export const isSpellSaved = (spellName: string): boolean => {
-  return savedSpells.some(spell => spell.nom === spellName);
+/**
+ * Nettoie le cache - utile pour les tests ou la gestion mémoire
+ */
+export const clearSpellsCache = (): void => {
+  spellSearchCache.clear();
+  schoolCache.clear();
+  levelCache.clear();
+  allSchoolsCache = null;
 }; 

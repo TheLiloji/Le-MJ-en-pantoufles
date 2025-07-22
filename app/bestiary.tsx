@@ -1,383 +1,348 @@
-import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, FlatList, TextInput, TouchableOpacity, ActivityIndicator } from 'react-native';
+import React, { useState, useEffect, useMemo, useCallback, memo } from 'react';
+import { View, Text, StyleSheet, FlatList, TextInput, TouchableOpacity, ActivityIndicator, Alert } from 'react-native';
 import { Search, Filter, X, ArrowLeft, ArrowUpDown, Plus, Minus } from 'lucide-react-native';
 import { useLocalSearchParams, router } from 'expo-router';
-import { loadAllCreatures, findCreatureByName, searchCreatures, Creature } from '../utils/bestiaryService';
+import { 
+  loadAllCreaturesSync, 
+  searchCreatures, 
+  findCreatureByName,
+  clearCache
+} from '../utils/bestiaryService';
+import { Creature, CreatureFilters, SortOptions } from '../types/bestiary';
 import BestiaryCard from './components/BestiaryCard';
+
+// Memoized sort function
+const sortCreatures = (creatures: Creature[], sortType: SortOptions['type'], sortOrder: SortOptions['order']): Creature[] => {
+  return [...creatures].sort((a, b) => {
+    let comparison = 0;
+    
+    switch (sortType) {
+      case 'alphabetical':
+        comparison = a.nom.localeCompare(b.nom);
+        break;
+      case 'fp':
+        const fpA = parseFP(a.fp);
+        const fpB = parseFP(b.fp);
+        comparison = fpA - fpB;
+        break;
+      case 'type':
+        comparison = a.type.localeCompare(b.type);
+        break;
+      default:
+        comparison = 0;
+    }
+    
+    return sortOrder === 'desc' ? -comparison : comparison;
+  });
+};
+
+// Optimized FP parsing with memoization
+const fpCache = new Map<string, number>();
+const parseFP = (fp: string): number => {
+  if (fpCache.has(fp)) {
+    return fpCache.get(fp)!;
+  }
+  
+  let result: number;
+  if (fp.includes('/')) {
+    const [numerator, denominator] = fp.split('/').map(Number);
+    result = numerator / denominator;
+  } else {
+    result = parseInt(fp, 10) || 0;
+  }
+  
+  fpCache.set(fp, result);
+  return result;
+};
+
+// Memoized filter function
+const filterCreatures = (
+  creatures: Creature[], 
+  filters: CreatureFilters
+): Creature[] => {
+  return creatures.filter(creature => {
+    // Search query filter
+    if (filters.searchQuery.trim() !== '') {
+      const query = filters.searchQuery.toLowerCase();
+      const matchesSearch = 
+        creature.nom.toLowerCase().includes(query) ||
+        creature.type.toLowerCase().includes(query) ||
+        creature.alignement.toLowerCase().includes(query) ||
+        creature.taille.toLowerCase().includes(query);
+      
+      if (!matchesSearch) return false;
+    }
+    
+    // FP filter
+    const fp = parseFP(creature.fp);
+    if (fp < filters.minFP || fp > filters.maxFP) {
+      return false;
+    }
+    
+    // Type filter
+    if (filters.type && !creature.type.toLowerCase().includes(filters.type.toLowerCase())) {
+      return false;
+    }
+    
+    // Size filter
+    if (filters.taille && !creature.taille.toLowerCase().includes(filters.taille.toLowerCase())) {
+      return false;
+    }
+    
+    // Alignment filter
+    if (filters.alignement && !creature.alignement.toLowerCase().includes(filters.alignement.toLowerCase())) {
+      return false;
+    }
+    
+    return true;
+  });
+};
+
+// Memoized list item component
+const CreatureListItem = memo<{ 
+  creature: Creature; 
+  onPress: (creature: Creature) => void;
+}>(({ creature, onPress }) => {
+  const handlePress = useCallback(() => {
+    onPress(creature);
+  }, [creature, onPress]);
+
+  return <BestiaryCard creature={creature} onPress={handlePress} />;
+});
+
+CreatureListItem.displayName = 'CreatureListItem';
 
 export default function BestiaryScreen() {
   const [creatures, setCreatures] = useState<Creature[]>([]);
-  const [filteredCreatures, setFilteredCreatures] = useState<Creature[]>([]);
-  const [searchQuery, setSearchQuery] = useState('');
   const [loading, setLoading] = useState(true);
   const [selectedCreature, setSelectedCreature] = useState<Creature | null>(null);
-  const [sortType, setSortType] = useState<'alphabetical' | 'fp'>('alphabetical');
-  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
+  const [refreshing, setRefreshing] = useState(false);
+
+  // Filter and sort state
+  const [filters, setFilters] = useState<CreatureFilters>({
+    searchQuery: '',
+    minFP: 0,
+    maxFP: 30,
+  });
+  
+  const [sortOptions, setSortOptions] = useState<SortOptions>({
+    type: 'alphabetical',
+    order: 'asc'
+  });
+
+  // UI state
   const [showSortMenu, setShowSortMenu] = useState(false);
-  const [minFP, setMinFP] = useState(0);
-  const [maxFP, setMaxFP] = useState(30);
   const [showFPFilter, setShowFPFilter] = useState(false);
   const [editingMinFP, setEditingMinFP] = useState(false);
   const [editingMaxFP, setEditingMaxFP] = useState(false);
   const [tempMinFP, setTempMinFP] = useState('0');
   const [tempMaxFP, setTempMaxFP] = useState('30');
 
+  const params = useLocalSearchParams();
+
+  // Load creatures data
   useEffect(() => {
     loadCreatures();
   }, []);
 
+  // Handle navigation params
   useEffect(() => {
-    let results = creatures;
-    
-    if (searchQuery.trim() !== '') {
-      results = searchCreatures(searchQuery);
+    if (params.creature) {
+      handleCreatureSearch(params.creature as string);
     }
-    
-    // Appliquer le filtre FP
-    results = results.filter(creature => {
-      const fp = parseFP(creature.fp);
-      return fp >= minFP && fp <= maxFP;
-    });
-    
-    // Appliquer le tri
-    const sortedResults = sortCreatures(results, sortType, sortOrder);
-    setFilteredCreatures(sortedResults);
-  }, [searchQuery, creatures, sortType, sortOrder, minFP, maxFP]);
+  }, [params.creature]);
 
-  const loadCreatures = async () => {
+  const loadCreatures = useCallback(async () => {
     try {
-      const allCreatures = loadAllCreatures();
+      setLoading(true);
+      // Use sync version for now, but this could be optimized to async with proper loading states
+      const allCreatures = loadAllCreaturesSync();
       setCreatures(allCreatures);
-      setFilteredCreatures(allCreatures);
     } catch (error) {
-      console.error('Erreur lors du chargement des créatures:', error);
+      console.error('Error loading creatures:', error);
+      Alert.alert('Erreur', 'Impossible de charger les créatures');
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
-  const sortCreatures = (creaturesToSort: Creature[], sortBy: 'alphabetical' | 'fp', order: 'asc' | 'desc' = 'asc'): Creature[] => {
-    return [...creaturesToSort].sort((a, b) => {
-      let comparison = 0;
-      
-      if (sortBy === 'alphabetical') {
-        comparison = a.nom.localeCompare(b.nom, 'fr');
-      } else {
-        // Tri par FP (Facteur de Puissance)
-        const fpA = parseFP(a.fp);
-        const fpB = parseFP(b.fp);
-        comparison = fpA - fpB;
+  const handleCreatureSearch = useCallback(async (creatureName: string) => {
+    try {
+      const creature = await findCreatureByName(creatureName);
+      if (creature) {
+        setSelectedCreature(creature);
       }
-      
-      return order === 'asc' ? comparison : -comparison;
-    });
-  };
-
-  const parseFP = (fp: string): number => {
-    // Gérer les cas spéciaux comme "1/4", "1/2", etc.
-    if (fp.includes('/')) {
-      const [num, den] = fp.split('/').map(Number);
-      return num / den;
+    } catch (error) {
+      console.error('Error searching creature:', error);
     }
-    // Pour les nombres entiers
-    return Number(fp) || 0;
-  };
+  }, []);
 
-  const handleSortPress = () => {
-    setShowSortMenu(!showSortMenu);
-  };
+  // Memoized filtered and sorted creatures
+  const filteredCreatures = useMemo(() => {
+    let results = filterCreatures(creatures, filters);
+    return sortCreatures(results, sortOptions.type, sortOptions.order);
+  }, [creatures, filters, sortOptions]);
 
-  const handleSortChange = (newSortType: 'alphabetical' | 'fp') => {
-    setSortType(newSortType);
+  // Optimized search handler with debouncing
+  const handleSearchChange = useCallback((text: string) => {
+    setFilters(prev => ({ ...prev, searchQuery: text }));
+  }, []);
+
+  const handleSortChange = useCallback((type: SortOptions['type']) => {
+    setSortOptions(prev => ({
+      type,
+      order: prev.type === type && prev.order === 'asc' ? 'desc' : 'asc'
+    }));
     setShowSortMenu(false);
-  };
+  }, []);
 
-  const handleSortOrderToggle = () => {
-    setSortOrder(prev => prev === 'asc' ? 'desc' : 'asc');
-  };
+  const handleFPFilterChange = useCallback((minFP: number, maxFP: number) => {
+    setFilters(prev => ({ ...prev, minFP, maxFP }));
+  }, []);
 
-  const handleFPFilterToggle = () => {
-    setShowFPFilter(!showFPFilter);
-  };
-
-  const formatFP = (fp: number): string => {
-    if (fp === 0.25) return '1/4';
-    if (fp === 0.5) return '1/2';
-    return fp.toString();
-  };
-
-  const adjustMinFP = (increment: boolean) => {
-    setMinFP(prev => {
-      const newValue = increment ? prev + 0.25 : prev - 0.25;
-      return Math.max(0, Math.min(newValue, maxFP - 0.25));
-    });
-  };
-
-  const adjustMaxFP = (increment: boolean) => {
-    setMaxFP(prev => {
-      const newValue = increment ? prev + 0.25 : prev - 0.25;
-      return Math.max(minFP + 0.25, Math.min(newValue, 30));
-    });
-  };
-
-  const handleMinFPEdit = () => {
-    setEditingMinFP(true);
-    setTempMinFP(minFP.toString());
-  };
-
-  const handleMaxFPEdit = () => {
-    setEditingMaxFP(true);
-    setTempMaxFP(maxFP.toString());
-  };
-
-  const handleMinFPSave = () => {
-    const value = parseFloat(tempMinFP);
-    if (!isNaN(value) && value >= 0 && value <= maxFP - 0.25) {
-      setMinFP(value);
-    }
-    setEditingMinFP(false);
-  };
-
-  const handleMaxFPSave = () => {
-    const value = parseFloat(tempMaxFP);
-    if (!isNaN(value) && value >= minFP + 0.25 && value <= 30) {
-      setMaxFP(value);
-    }
-    setEditingMaxFP(false);
-  };
-
-  const handleMinFPCancel = () => {
-    setEditingMinFP(false);
-  };
-
-  const handleMaxFPCancel = () => {
-    setEditingMaxFP(false);
-  };
-
-  const handleCreaturePress = (creature: Creature) => {
+  const handleCreaturePress = useCallback((creature: Creature) => {
     setSelectedCreature(creature);
-  };
+  }, []);
 
-  const handleBackToList = () => {
-    setSelectedCreature(null);
-  };
+  const handleRefresh = useCallback(async () => {
+    setRefreshing(true);
+    clearCache(); // Clear cache to force reload
+    await loadCreatures();
+    setRefreshing(false);
+  }, [loadCreatures]);
 
-  const renderCreatureItem = ({ item }: { item: Creature }) => (
-    <TouchableOpacity 
-      style={styles.creatureItem}
-      onPress={() => handleCreaturePress(item)}
-    >
-      <View style={styles.creatureHeader}>
-        <Text style={styles.creatureName}>{item.nom}</Text>
-        <Text style={styles.creatureType}>{item.type}</Text>
-      </View>
-      <View style={styles.creatureStats}>
-        <Text style={styles.stat}>CA: {item.ca}</Text>
-        <Text style={styles.stat}>PV: {item.pv}</Text>
-        <Text style={styles.stat}>FP: {item.fp}</Text>
-      </View>
-      {item.image_url && (
-        <View style={styles.imageContainer}>
-          <Text style={styles.imageText}>📷 Image disponible</Text>
-        </View>
-      )}
-    </TouchableOpacity>
-  );
+  // Render item function for FlatList
+  const renderCreatureItem = useCallback(({ item }: { item: Creature }) => (
+    <CreatureListItem creature={item} onPress={handleCreaturePress} />
+  ), [handleCreaturePress]);
+
+  // Key extractor for FlatList
+  const keyExtractor = useCallback((item: Creature) => item.nom, []);
+
+  // Get item layout for better performance
+  const getItemLayout = useCallback((data: any, index: number) => ({
+    length: 180, // Estimated item height
+    offset: 180 * index,
+    index,
+  }), []);
 
   if (loading) {
     return (
       <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color="#10B981" />
+        <ActivityIndicator size="large" color="#3B82F6" />
         <Text style={styles.loadingText}>Chargement du bestiaire...</Text>
-      </View>
-    );
-  }
-
-  if (selectedCreature) {
-    return (
-      <View style={styles.container}>
-        <View style={styles.header}>
-          <TouchableOpacity onPress={handleBackToList} style={styles.backButton}>
-            <ArrowLeft size={24} color="#FFFFFF" />
-          </TouchableOpacity>
-          <Text style={styles.headerTitle}>Détails de la créature</Text>
-        </View>
-        <BestiaryCard creature={selectedCreature} />
       </View>
     );
   }
 
   return (
     <View style={styles.container}>
+      {/* Header */}
       <View style={styles.header}>
-        <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
-          <ArrowLeft size={24} color="#FFFFFF" />
-        </TouchableOpacity>
-        <Text style={styles.title}>Bestiaire D&D</Text>
-        <Text style={styles.subtitle}>{filteredCreatures.length} créatures trouvées</Text>
+        <Text style={styles.title}>Bestiaire</Text>
+        <Text style={styles.subtitle}>
+          {filteredCreatures.length} créature{filteredCreatures.length > 1 ? 's' : ''}
+        </Text>
       </View>
 
+      {/* Search and filters */}
       <View style={styles.searchContainer}>
-        <View style={styles.searchBox}>
-          <Search size={20} color="#6B7280" />
+        <View style={styles.searchInputContainer}>
+          <Search size={20} color="#6B7280" style={styles.searchIcon} />
           <TextInput
             style={styles.searchInput}
             placeholder="Rechercher une créature..."
-            value={searchQuery}
-            onChangeText={setSearchQuery}
-            placeholderTextColor="#9CA3AF"
+            placeholderTextColor="#6B7280"
+            value={filters.searchQuery}
+            onChangeText={handleSearchChange}
           />
-          {searchQuery.length > 0 && (
-            <TouchableOpacity onPress={() => setSearchQuery('')}>
+          {filters.searchQuery.length > 0 && (
+            <TouchableOpacity onPress={() => handleSearchChange('')}>
               <X size={20} color="#6B7280" />
             </TouchableOpacity>
           )}
         </View>
-        
-        <TouchableOpacity style={styles.sortButton} onPress={handleSortPress}>
-          <ArrowUpDown size={20} color="#6B7280" />
-          <Text style={styles.sortButtonText}>
-            {sortType === 'alphabetical' ? 'A-Z' : 'FP'}
-          </Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.sortOrderButton} onPress={handleSortOrderToggle}>
-          <Text style={styles.sortOrderButtonText}>
-            {sortOrder === 'asc' ? '↑' : '↓'}
-          </Text>
-        </TouchableOpacity>
+
+        <View style={styles.filterRow}>
+          <TouchableOpacity 
+            style={styles.filterButton} 
+            onPress={() => setShowSortMenu(!showSortMenu)}
+          >
+            <ArrowUpDown size={16} color="#FFFFFF" />
+            <Text style={styles.filterButtonText}>Tri</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity 
+            style={styles.filterButton} 
+            onPress={() => setShowFPFilter(!showFPFilter)}
+          >
+            <Filter size={16} color="#FFFFFF" />
+            <Text style={styles.filterButtonText}>FP</Text>
+          </TouchableOpacity>
+        </View>
       </View>
 
+      {/* Sort menu */}
       {showSortMenu && (
         <View style={styles.sortMenu}>
           <TouchableOpacity 
-            style={[styles.sortOption, sortType === 'alphabetical' && styles.sortOptionActive]}
+            style={styles.sortOption} 
             onPress={() => handleSortChange('alphabetical')}
           >
-            <Text style={[styles.sortOptionText, sortType === 'alphabetical' && styles.sortOptionTextActive]}>
-              Ordre alphabétique
+            <Text style={styles.sortOptionText}>
+              Alphabétique {sortOptions.type === 'alphabetical' && `(${sortOptions.order === 'asc' ? '↑' : '↓'})`}
             </Text>
           </TouchableOpacity>
           <TouchableOpacity 
-            style={[styles.sortOption, sortType === 'fp' && styles.sortOptionActive]}
+            style={styles.sortOption} 
             onPress={() => handleSortChange('fp')}
           >
-            <Text style={[styles.sortOptionText, sortType === 'fp' && styles.sortOptionTextActive]}>
-              Facteur de Puissance
+            <Text style={styles.sortOptionText}>
+              Puissance {sortOptions.type === 'fp' && `(${sortOptions.order === 'asc' ? '↑' : '↓'})`}
+            </Text>
+          </TouchableOpacity>
+          <TouchableOpacity 
+            style={styles.sortOption} 
+            onPress={() => handleSortChange('type')}
+          >
+            <Text style={styles.sortOptionText}>
+              Type {sortOptions.type === 'type' && `(${sortOptions.order === 'asc' ? '↑' : '↓'})`}
             </Text>
           </TouchableOpacity>
         </View>
       )}
 
-      {/* Filtre FP */}
-      <View style={styles.fpFilterContainer}>
-        <TouchableOpacity style={styles.fpFilterToggle} onPress={handleFPFilterToggle}>
-          <Filter size={16} color="#6B7280" />
-          <Text style={styles.fpFilterToggleText}>
-            FP: {formatFP(minFP)} - {formatFP(maxFP)}
-          </Text>
-        </TouchableOpacity>
-      </View>
-
+      {/* FP Filter */}
       {showFPFilter && (
-        <View style={styles.fpFilterPanel}>
-          <View style={styles.fpRangeContainer}>
-            <Text style={styles.fpRangeLabel}>FP Minimum</Text>
-            <View style={styles.fpAdjuster}>
-              <TouchableOpacity 
-                style={styles.fpButton} 
-                onPress={() => adjustMinFP(false)}
-                disabled={minFP <= 0}
-              >
-                <Minus size={16} color={minFP <= 0 ? "#D1D5DB" : "#6B7280"} />
-              </TouchableOpacity>
-              
-              {editingMinFP ? (
-                <View style={styles.fpEditContainer}>
-                  <TextInput
-                    style={styles.fpEditInput}
-                    value={tempMinFP}
-                    onChangeText={setTempMinFP}
-                    keyboardType="numeric"
-                    autoFocus
-                  />
-                  <View style={styles.fpEditButtons}>
-                    <TouchableOpacity style={styles.fpEditButton} onPress={handleMinFPSave}>
-                      <Text style={styles.fpEditButtonText}>✓</Text>
-                    </TouchableOpacity>
-                    <TouchableOpacity style={styles.fpEditButton} onPress={handleMinFPCancel}>
-                      <Text style={styles.fpEditButtonText}>✗</Text>
-                    </TouchableOpacity>
-                  </View>
-                </View>
-              ) : (
-                <TouchableOpacity onPress={handleMinFPEdit}>
-                  <Text style={styles.fpValue}>{formatFP(minFP)}</Text>
-                </TouchableOpacity>
-              )}
-              
-              <TouchableOpacity 
-                style={styles.fpButton} 
-                onPress={() => adjustMinFP(true)}
-                disabled={minFP >= maxFP - 0.25}
-              >
-                <Plus size={16} color={minFP >= maxFP - 0.25 ? "#D1D5DB" : "#6B7280"} />
-              </TouchableOpacity>
-            </View>
-          </View>
-
-          <View style={styles.fpRangeContainer}>
-            <Text style={styles.fpRangeLabel}>FP Maximum</Text>
-            <View style={styles.fpAdjuster}>
-              <TouchableOpacity 
-                style={styles.fpButton} 
-                onPress={() => adjustMaxFP(false)}
-                disabled={maxFP <= minFP + 0.25}
-              >
-                <Minus size={16} color={maxFP <= minFP + 0.25 ? "#D1D5DB" : "#6B7280"} />
-              </TouchableOpacity>
-              
-              {editingMaxFP ? (
-                <View style={styles.fpEditContainer}>
-                  <TextInput
-                    style={styles.fpEditInput}
-                    value={tempMaxFP}
-                    onChangeText={setTempMaxFP}
-                    keyboardType="numeric"
-                    autoFocus
-                  />
-                  <View style={styles.fpEditButtons}>
-                    <TouchableOpacity style={styles.fpEditButton} onPress={handleMaxFPSave}>
-                      <Text style={styles.fpEditButtonText}>✓</Text>
-                    </TouchableOpacity>
-                    <TouchableOpacity style={styles.fpEditButton} onPress={handleMaxFPCancel}>
-                      <Text style={styles.fpEditButtonText}>✗</Text>
-                    </TouchableOpacity>
-                  </View>
-                </View>
-              ) : (
-                <TouchableOpacity onPress={handleMaxFPEdit}>
-                  <Text style={styles.fpValue}>{formatFP(maxFP)}</Text>
-                </TouchableOpacity>
-              )}
-              
-              <TouchableOpacity 
-                style={styles.fpButton} 
-                onPress={() => adjustMaxFP(true)}
-                disabled={maxFP >= 30}
-              >
-                <Plus size={16} color={maxFP >= 30 ? "#D1D5DB" : "#6B7280"} />
-              </TouchableOpacity>
-            </View>
+        <View style={styles.fpFilterContainer}>
+          <Text style={styles.fpFilterTitle}>Filtrer par Puissance (FP)</Text>
+          <View style={styles.fpFilterRow}>
+            <Text style={styles.fpLabel}>Min:</Text>
+            <TouchableOpacity onPress={() => setEditingMinFP(true)}>
+              <Text style={styles.fpValue}>{filters.minFP}</Text>
+            </TouchableOpacity>
+            <Text style={styles.fpLabel}>Max:</Text>
+            <TouchableOpacity onPress={() => setEditingMaxFP(true)}>
+              <Text style={styles.fpValue}>{filters.maxFP}</Text>
+            </TouchableOpacity>
           </View>
         </View>
       )}
 
+      {/* Creatures list */}
       <FlatList
         data={filteredCreatures}
         renderItem={renderCreatureItem}
-        keyExtractor={(item) => item.nom}
-        style={styles.list}
+        keyExtractor={keyExtractor}
+        getItemLayout={getItemLayout}
+        initialNumToRender={10}
+        maxToRenderPerBatch={10}
+        windowSize={10}
+        removeClippedSubviews={true}
+        refreshing={refreshing}
+        onRefresh={handleRefresh}
         showsVerticalScrollIndicator={false}
+        style={styles.list}
         contentContainerStyle={styles.listContent}
       />
     </View>
@@ -688,5 +653,112 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontWeight: '600',
     color: '#6B7280',
+  },
+  searchInputContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#FFFFFF',
+    borderRadius: 12,
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.1,
+    shadowRadius: 3.84,
+    elevation: 5,
+  },
+  searchIcon: {
+    marginRight: 12,
+  },
+  filterRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginTop: 12,
+  },
+  filterButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#3B82F6',
+    borderRadius: 20,
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+  },
+  filterButtonText: {
+    color: '#FFFFFF',
+    fontSize: 14,
+    fontWeight: '600',
+    marginLeft: 8,
+  },
+  fpFilterTitle: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: '#374151',
+    marginBottom: 8,
+  },
+  fpFilterRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-around',
+    backgroundColor: '#F3F4F6',
+    borderRadius: 8,
+    paddingVertical: 8,
+  },
+  fpLabel: {
+    fontSize: 14,
+    color: '#6B7280',
+    fontWeight: '500',
+  },
+  fpValue: {
+    fontSize: 16,
+    color: '#3B82F6',
+    fontWeight: 'bold',
+    paddingHorizontal: 12,
+    paddingVertical: 4,
+    backgroundColor: '#EBF4FF',
+    borderRadius: 6,
+    minWidth: 40,
+    textAlign: 'center',
+  },
+  sortMenu: {
+    backgroundColor: '#FFFFFF',
+    marginHorizontal: 16,
+    borderRadius: 8,
+    paddingVertical: 8,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+    marginBottom: 8,
+  },
+  sortOption: {
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+  },
+  sortOptionText: {
+    fontSize: 16,
+    color: '#374151',
+    fontWeight: '500',
+  },
+  fpFilterContainer: {
+    backgroundColor: '#FFFFFF',
+    marginHorizontal: 16,
+    borderRadius: 8,
+    padding: 16,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+    marginBottom: 8,
+  },
+  list: {
+    flex: 1,
+  },
+  listContent: {
+    paddingBottom: 20,
   },
 }); 

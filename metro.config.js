@@ -1,13 +1,10 @@
 const { getDefaultConfig } = require('expo/metro-config');
+const path = require('path');
 
 const config = getDefaultConfig(__dirname);
-
-// Ajouter le support des fichiers .md
-config.resolver.assetExts.push('md');
-
 config.resolver.alias = {
-    ...config.resolver.alias,
-    '@': __dirname,
-  };
+  ...config.resolver.alias,
+  '@': path.resolve(__dirname),
+};
 
-module.exports = config; 
+module.exports = config;

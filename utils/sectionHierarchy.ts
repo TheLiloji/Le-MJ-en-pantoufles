@@ -57,15 +57,6 @@ export function getMainSections(): SectionItem[] {
       hasSubsections: true,
     },
     {
-      id: 'grimoire',
-      title: 'Grimoire de Sorts',
-      description: 'Tous les sorts disponibles par niveau',
-      icon: 'sparkles',
-      count: '400+ sorts',
-      color: '#06B6D4',
-      hasSubsections: true,
-    },
-    {
       id: 'equipement-d-aventurier',
       title: 'Équipement',
       description: 'Armes, armures et équipement d\'aventurier',

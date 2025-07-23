@@ -18,18 +18,14 @@ export default function CreateGrimoireScreen() {
     setLoading(true);
     try {
       const newGrimoire = await createGrimoire(nom.trim(), description.trim() || undefined);
+      // Redirection immédiate après la création
+      router.push({
+        pathname: '/grimoires/[id]',
+        params: { id: newGrimoire.id }
+      });
       Alert.alert(
         'Succès',
-        `Grimoire "${newGrimoire.nom}" créé avec succès !`,
-        [
-          {
-            text: 'OK',
-            onPress: () => router.push({
-              pathname: '/grimoires/[id]',
-              params: { id: newGrimoire.id }
-            })
-          }
-        ]
+        `Grimoire "${newGrimoire.nom}" créé avec succès !`
       );
     } catch (error) {
       console.error('Erreur lors de la création:', error);

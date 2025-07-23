@@ -1,13 +1,17 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, FlatList, TouchableOpacity, Alert, ActivityIndicator, Image } from 'react-native';
-import { Plus, Package, Trash2, User } from 'lucide-react-native';
-import { router, useFocusEffect } from 'expo-router';
+import { View, Text, StyleSheet, FlatList, TouchableOpacity, Alert, ActivityIndicator } from 'react-native';
+import { Plus, Package, Trash2, User, ArrowLeft } from 'lucide-react-native';
+import { router } from 'expo-router';
 import { loadBackpacks, deleteBackpack, Backpack, getBackpackStats } from '../../utils/backpackService';
 
-export default function EquipmentScreen() {
+export default function BackpacksScreen() {
   const [backpacks, setBackpacks] = useState<Backpack[]>([]);
   const [loading, setLoading] = useState(true);
   const [deletingBackpack, setDeletingBackpack] = useState<string | null>(null);
+
+  useEffect(() => {
+    loadBackpacksData();
+  }, []);
 
   const loadBackpacksData = async () => {
     try {
@@ -19,13 +23,6 @@ export default function EquipmentScreen() {
       setLoading(false);
     }
   };
-
-  // Recharger les données à chaque fois que la page devient active
-  useFocusEffect(
-    React.useCallback(() => {
-      loadBackpacksData();
-    }, [])
-  );
 
   const handleCreateBackpack = () => {
     router.push('/backpacks/create');
@@ -148,19 +145,13 @@ export default function EquipmentScreen() {
   return (
     <View style={styles.container}>
       <View style={styles.header}>
-        <View style={styles.headerContent}>
-          <Image 
-            source={require('../../assets/images/LogoMjPantoufles.png')}
-            style={styles.logo}
-            resizeMode="contain"
-          />
-          <View style={styles.titleContainer}>
-            <Text style={styles.title}>Sacs à dos</Text>
-            <Text style={styles.subtitle}>
-              Gérez les équipements de vos personnages
-            </Text>
-          </View>
-        </View>
+        <TouchableOpacity 
+          onPress={() => router.push('/(tabs)/equipment')} 
+          style={styles.backButton}
+        >
+          <ArrowLeft size={24} color="#FFFFFF" />
+        </TouchableOpacity>
+        <Text style={styles.title}>Sacs à dos</Text>
       </View>
 
       {backpacks.length === 0 ? (
@@ -213,24 +204,19 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     borderBottomLeftRadius: 25,
     borderBottomRightRadius: 25,
-  },
-  headerContent: {
     flexDirection: 'row',
     alignItems: 'center',
   },
-  logo: {
-    width: 50,
-    height: 50,
+  backButton: {
+    padding: 10,
     marginRight: 10,
-  },
-  titleContainer: {
-    flex: 1,
   },
   title: {
     fontSize: 28,
     fontWeight: 'bold',
     color: '#FFFFFF',
     textAlign: 'center',
+    flex: 1,
   },
   subtitle: {
     fontSize: 16,
@@ -406,4 +392,4 @@ const styles = StyleSheet.create({
     shadowRadius: 8,
     elevation: 8,
   },
-});
+}); 

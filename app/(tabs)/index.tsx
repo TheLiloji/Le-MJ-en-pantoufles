@@ -1,4 +1,4 @@
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image } from 'react-native';
 import { useState } from 'react';
 import { router } from 'expo-router';
 import { Plus, Sword, Shield, Heart } from 'lucide-react-native';
@@ -36,8 +36,17 @@ export default function CharactersScreen() {
   return (
     <View style={styles.container}>
       <View style={styles.header}>
-        <Text style={styles.title}>LeMjEnPantoufles</Text>
-        <Text style={styles.subtitle}>Mes Personnages D&D</Text>
+        <View style={styles.headerContent}>
+          <Image 
+            source={require('../../assets/images/LogoMjPantoufles.png')}
+            style={styles.logo}
+            resizeMode="contain"
+          />
+          <View style={styles.titleContainer}>
+            <Text style={styles.title}>LeMjEnPantoufles</Text>
+            <Text style={styles.subtitle}>Mes Personnages D&D</Text>
+          </View>
+        </View>
       </View>
 
       <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
@@ -95,6 +104,18 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     borderBottomLeftRadius: 25,
     borderBottomRightRadius: 25,
+  },
+  headerContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  logo: {
+    width: 50,
+    height: 50,
+    marginRight: 10,
+  },
+  titleContainer: {
+    flex: 1,
   },
   title: {
     fontSize: 28,

@@ -1,4 +1,4 @@
-import { View, Text, StyleSheet, ScrollView, TextInput, TouchableOpacity, Alert } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TextInput, TouchableOpacity, Alert, Image } from 'react-native';
 import { useState, useEffect } from 'react';
 import { Search, Plus, BookOpen, Trash2, Edit3, Zap } from 'lucide-react-native';
 import { router } from 'expo-router';
@@ -83,8 +83,17 @@ export default function SpellsScreen() {
   return (
     <View style={styles.container}>
       <View style={styles.header}>
-        <Text style={styles.title}>Grimoires</Text>
-        <Text style={styles.subtitle}>Gérez vos grimoires de sorts</Text>
+        <View style={styles.headerContent}>
+          <Image 
+            source={require('../../assets/images/LogoMjPantoufles.png')}
+            style={styles.logo}
+            resizeMode="contain"
+          />
+          <View style={styles.titleContainer}>
+            <Text style={styles.title}>Grimoires</Text>
+            <Text style={styles.subtitle}>Gérez vos grimoires de sorts</Text>
+          </View>
+        </View>
       </View>
 
       <View style={styles.searchContainer}>
@@ -188,6 +197,18 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     borderBottomLeftRadius: 25,
     borderBottomRightRadius: 25,
+  },
+  headerContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  logo: {
+    width: 50,
+    height: 50,
+    marginRight: 10,
+  },
+  titleContainer: {
+    flex: 1,
   },
   title: {
     fontSize: 28,

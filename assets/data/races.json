@@ -1,0 +1,82 @@
+[
+  {
+    "id": "elf",
+    "name": "Elfe",
+    "description": "Gracieux et immortels, les elfes vivent en harmonie avec la nature.",
+    "traits": [
+      "Vision dans le noir (18m)",
+      "Sens aiguisés",
+      "Résistance aux charmes",
+      "Transe (repos en 4h)"
+    ],
+    "abilityBonus": {
+      "dexterity": 2
+    },
+    "size": "Moyenne",
+    "speed": 9,
+    "languages": ["Commun", "Elfique"],
+    "subRaces": [
+      {
+        "name": "Haut-Elfe",
+        "abilityBonus": { "intelligence": 1 },
+        "features": ["Maîtrise des épées elfiques", "Sort mineur"]
+      },
+      {
+        "name": "Elfe des Bois",
+        "abilityBonus": { "wisdom": 1 },
+        "features": ["Maîtrise de l'arc elfique", "Masque de la nature"]
+      }
+    ]
+  },
+  {
+    "id": "dwarf",
+    "name": "Nain",
+    "description": "Robustes et fiers, les nains excellent dans l'artisanat et le combat.",
+    "traits": [
+      "Vision dans le noir (18m)",
+      "Résistance naine (poison)",
+      "Entraînement aux armes naines",
+      "Maîtrise d'outils"
+    ],
+    "abilityBonus": {
+      "constitution": 2
+    },
+    "size": "Moyenne",
+    "speed": 7.5,
+    "languages": ["Commun", "Nain"],
+    "subRaces": [
+      {
+        "name": "Nain des Montagnes",
+        "abilityBonus": { "strength": 2 },
+        "features": ["Maîtrise des armures"]
+      },
+      {
+        "name": "Nain des Collines",
+        "abilityBonus": { "wisdom": 1 },
+        "features": ["Robustesse naine (+1 PV par niveau)"]
+      }
+    ]
+  },
+  {
+    "id": "human",
+    "name": "Humain",
+    "description": "Polyvalents et ambitieux, les humains s'adaptent à toutes les situations.",
+    "traits": [
+      "Adaptabilité",
+      "Polyvalence",
+      "Ambition naturelle"
+    ],
+    "abilityBonus": {
+      "strength": 1,
+      "dexterity": 1,
+      "constitution": 1,
+      "intelligence": 1,
+      "wisdom": 1,
+      "charisma": 1
+    },
+    "size": "Moyenne",
+    "speed": 9,
+    "languages": ["Commun"],
+    "subRaces": []
+  }
+]

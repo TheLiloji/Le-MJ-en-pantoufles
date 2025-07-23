@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, FlatList, TouchableOpacity, Alert, ActivityIndicator, Image } from 'react-native';
 import { Plus, Package, Trash2, User } from 'lucide-react-native';
 import { router, useFocusEffect } from 'expo-router';
-import { loadBackpacks, deleteBackpack, Backpack, getBackpackStats } from '../../utils/backpackService';
+import { loadBackpacks, deleteBackpack, Backpack, getBackpackStats } from '@/utils/backpackService';
 
 export default function EquipmentScreen() {
   const [backpacks, setBackpacks] = useState<Backpack[]>([]);
@@ -150,7 +150,7 @@ export default function EquipmentScreen() {
       <View style={styles.header}>
         <View style={styles.headerContent}>
           <Image 
-            source={require('../../assets/images/LogoMjPantoufles.png')}
+            source={require('@/assets/images/LogoMjPantoufles.png')}
             style={styles.logo}
             resizeMode="contain"
           />

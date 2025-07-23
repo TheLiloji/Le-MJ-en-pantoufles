@@ -74,9 +74,9 @@ export interface Poison {
 const EQUIPMENT_STORAGE_KEY = 'user_equipment';
 
 // Import des données JSON
-const equipmentData = require('../data/equipements_dnd.json');
-const magicItemsData = require('../data/objets_magiques_dnd_fr.json');
-const poisonsData = require('../data/poisons_dnd_fr.json');
+const equipmentData = require('@/assets/data/equipements_dnd.json');
+const magicItemsData = require('@/assets/data/objets_magiques_dnd_fr.json');
+const poisonsData = require('@/assets/data/poisons_dnd_fr.json');
 
 export const loadEquipment = async (): Promise<EquipmentItem[]> => {
   try {

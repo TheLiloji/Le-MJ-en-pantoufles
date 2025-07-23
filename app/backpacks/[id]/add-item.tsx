@@ -18,8 +18,8 @@ import {
   MagicItem,
   Poison,
   EquipmentData
-} from '../../../utils/equipmentService';
-import { canAddItemToBackpack, loadBackpacks, Backpack, addItemToBackpack, updateItemQuantity, removeItemFromBackpack, getBackpackStats } from '../../../utils/backpackService';
+} from '@/utils/equipmentService';
+import { canAddItemToBackpack, loadBackpacks, Backpack, addItemToBackpack, updateItemQuantity, removeItemFromBackpack, getBackpackStats } from '@/utils/backpackService';
 
 interface EquipmentSearchResult {
   id: string;

@@ -1,4 +1,4 @@
-import { markdownContent } from '../assets/markdownContent';
+import { markdownContent } from '@/assets/markdownContent';
 
 // Types pour la hiérarchie
 export interface SectionItem {

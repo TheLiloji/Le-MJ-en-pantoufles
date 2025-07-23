@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, FlatList, TouchableOpacity, Alert, ActivityIndicator } from 'react-native';
 import { Plus, Package, Trash2, User, ArrowLeft } from 'lucide-react-native';
 import { router } from 'expo-router';
-import { loadBackpacks, deleteBackpack, Backpack, getBackpackStats } from '../../utils/backpackService';
+import { loadBackpacks, deleteBackpack, Backpack, getBackpackStats } from '@/utils/backpackService';
 
 export default function BackpacksScreen() {
   const [backpacks, setBackpacks] = useState<Backpack[]>([]);

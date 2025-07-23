@@ -9,9 +9,9 @@
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "splash": {
-      "image": "./assets/images/splash.png",
+      "image": "./assets/images/icon.png",
       "resizeMode": "contain",
-      "backgroundColor": "#1F2937"
+      "backgroundColor": "#fdfaf3"
     },
     "ios": {
       "supportsTablet": true,
@@ -28,7 +28,7 @@
       "package": "com.mjenpantoufles.grimoire",
       "versionCode": 1,
       "adaptiveIcon": {
-        "foregroundImage": "./assets/images/adaptive-icon.png",
+        "foregroundImage": "./assets/images/icon.png",
         "backgroundColor": "#1F2937"
       },
       "permissions": []
@@ -51,8 +51,12 @@
         "origin": false
       },
       "eas": {
-        "projectId": "your-project-id-here"
+        "projectId": "15ac5739-1df8-4738-a610-ca4173a1d656"
       }
-    }
+    },
+    "owner": "liloji",
+    "assetBundlePatterns": [
+      "assets/data/*.json"
+    ]
   }
 }

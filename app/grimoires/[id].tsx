@@ -3,9 +3,9 @@ import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Alert, TextInput 
 import { useState, useEffect } from 'react';
 import { ArrowLeft, Plus, Zap, BookOpen, Trash2, Clock, Target } from 'lucide-react-native';
 import { router, useLocalSearchParams, useFocusEffect } from 'expo-router';
-import { loadGrimoires, Grimoire, removeSpellFromGrimoire, useSpellSlot, restoreSpellSlot, resetSpellSlots, updateGrimoireEmplacements } from '../../utils/grimoireService';
-import { GrimoireSpell } from '../../utils/grimoireService';
-import { isValidDisplayString } from '../../utils/spellsService';
+import { loadGrimoires, Grimoire, removeSpellFromGrimoire, useSpellSlot, restoreSpellSlot, resetSpellSlots, updateGrimoireEmplacements } from '@/utils/grimoireService';
+import { GrimoireSpell } from '@/utils/grimoireService';
+import { isValidDisplayString } from '@/utils/spellsService';
 
 export default function GrimoireDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();

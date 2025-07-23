@@ -1,5 +1,5 @@
 // Import du contenu Markdown depuis le fichier généré
-import { markdownContent } from '../assets/markdownContent';
+import { markdownContent } from '@/assets/markdownContent';
 
 // Fonction pour charger le contenu Markdown
 export async function loadMarkdownContent(sectionId: string): Promise<string> {

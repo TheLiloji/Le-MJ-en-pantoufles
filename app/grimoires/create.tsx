@@ -2,7 +2,7 @@ import { View, Text, StyleSheet, TextInput, TouchableOpacity, Alert } from 'reac
 import { useState } from 'react';
 import { ArrowLeft, Save } from 'lucide-react-native';
 import { router } from 'expo-router';
-import { createGrimoire } from '../../utils/grimoireService';
+import { createGrimoire } from '@/utils/grimoireService';
 
 export default function CreateGrimoireScreen() {
   const [nom, setNom] = useState('');

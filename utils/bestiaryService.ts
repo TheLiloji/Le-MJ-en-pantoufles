@@ -1,4 +1,4 @@
-import monstresData from '../data/monstres_dnd_fr_complet.json';
+import monstresData from '@/assets/data/monstres_dnd_fr_complet.json';
 
 export interface Creature {
   nom: string;

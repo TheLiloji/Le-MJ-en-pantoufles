@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, FlatList, TextInput, TouchableOpacity, ActivityIndicator, ScrollView } from 'react-native';
 import { Search, ArrowLeft, Plus, BookOpen, Filter } from 'lucide-react-native';
 import { router } from 'expo-router';
-import { loadAllSpells, searchSpells, addSpellToSaved, isSpellSaved, Spell, getAvailableClasses } from '../../utils/spellsService';
+import { loadAllSpells, searchSpells, addSpellToSaved, isSpellSaved, Spell, getAvailableClasses } from '@/utils/spellsService';
 
 export default function AddSpellScreen() {
   const [searchQuery, setSearchQuery] = useState('');

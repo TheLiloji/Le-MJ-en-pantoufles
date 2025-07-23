@@ -1,10 +1,10 @@
-import { View, Text, StyleSheet, ScrollView, ActivityIndicator } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, ActivityIndicator, TouchableOpacity } from 'react-native';
 import { ArrowLeft } from 'lucide-react-native';
 import { useLocalSearchParams, router } from 'expo-router';
 import { useState, useEffect } from 'react';
-import { loadMarkdownContent } from '../../utils/loadMarkdown';
-import { getSectionTitle } from '../../utils/sectionHierarchy';
-import { cleanSpecificMarkdown } from '../../utils/markdownCleaner';
+import { loadMarkdownContent } from '@/utils/loadMarkdown';
+import { getSectionTitle } from '@/utils/sectionHierarchy';
+import { cleanSpecificMarkdown } from '@/utils/markdownCleaner';
 import Markdown from 'react-native-markdown-display';
 
 export default function SectionScreen() {
@@ -83,6 +83,12 @@ export default function SectionScreen() {
   return (
     <View style={styles.container}>
       <View style={styles.header}>
+        <TouchableOpacity 
+          onPress={handleBackPress} 
+          style={styles.backButton}
+        >
+          <ArrowLeft size={24} color="#FFFFFF" />
+        </TouchableOpacity>
         <View style={styles.headerContent}>
           <Text style={styles.title}>{sectionTitle}</Text>
           <Text style={styles.subtitle}>Contenu D&D 5e</Text>
@@ -106,14 +112,24 @@ const styles = StyleSheet.create({
     backgroundColor: '#F8FAFC',
   },
   header: {
-    backgroundColor: '#10B981',
+    backgroundColor: '#6B46C1',
     paddingTop: 60,
     paddingBottom: 30,
     paddingHorizontal: 20,
     borderBottomLeftRadius: 25,
     borderBottomRightRadius: 25,
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  backButton: {
+    position: 'absolute',
+    top: 60,
+    left: 20,
+    zIndex: 1,
+    padding: 10,
   },
   headerContent: {
+    flex: 1,
     alignItems: 'center',
   },
   title: {

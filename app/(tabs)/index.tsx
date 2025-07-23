@@ -1,92 +1,151 @@
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image } from 'react-native';
 import { useState } from 'react';
 import { router } from 'expo-router';
-import { Plus, Sword, Shield, Heart } from 'lucide-react-native';
+import { Plus, Sword, Shield, Heart, BookOpen, Package, Zap, Users, Star, ArrowRight } from 'lucide-react-native';
 
-export default function CharactersScreen() {
-  const [characters, setCharacters] = useState([
-    {
-      id: 1,
-      name: 'Elara la Mystique',
-      race: 'Elfe',
-      class: 'Sorcière',
-      level: 5,
-      hp: 42,
-      maxHp: 42,
-      ac: 15,
-    },
-    {
-      id: 2,
-      name: 'Thorin Barbe-de-Fer',
-      race: 'Nain',
-      class: 'Guerrier',
-      level: 3,
-      hp: 28,
-      maxHp: 35,
-      ac: 18,
-    },
-  ]);
-
+export default function HomeScreen() {
   const handleCreateCharacter = () => {
     router.push('/create');
   };
 
+  const handleFeaturePress = (featureTitle: string) => {
+    switch (featureTitle) {
+      case "Gestion des Sorts":
+        router.push('/spells');
+        break;
+      case "Sacs à Dos":
+        router.push('/equipment');
+        break;
+      case "Grimoire D&D":
+        router.push('/grimoire');
+        break;
+      default:
+        break;
+    }
+  };
 
+  const features = [
+    {
+      icon: <Zap size={24} color="#F59E0B" />,
+      title: "Gestion des Sorts",
+      description: "Créez et gérez vos grimoires de sorts avec emplacements et descriptions détaillées",
+      color: "#F59E0B"
+    },
+    {
+      icon: <Package size={24} color="#10B981" />,
+      title: "Sacs à Dos",
+      description: "Organisez les équipements de vos personnages avec gestion du poids et de la valeur",
+      color: "#10B981"
+    },
+    {
+      icon: <BookOpen size={24} color="#6B46C1" />,
+      title: "Grimoire D&D",
+      description: "Référence complète en français avec toutes les règles, un bestiaire complet et fournis, races, classes, combats véhicules enfin tout ce qui touche à DnD5e quoi (affichage parfois pas au point pour certaines règles)",
+      color: "#6B46C1"
+    }
+  ];
 
   return (
     <View style={styles.container}>
       <View style={styles.header}>
         <View style={styles.headerContent}>
           <Image 
-            source={require('../../assets/images/LogoMjPantoufles.png')}
+            source={require('@/assets/images/LogoMjPantoufles.png')}
             style={styles.logo}
             resizeMode="contain"
           />
           <View style={styles.titleContainer}>
-            <Text style={styles.title}>LeMjEnPantoufles</Text>
-            <Text style={styles.subtitle}>Mes Personnages D&D</Text>
+            <Text style={styles.title}>Le Mj En Pantoufles</Text>
+            <Text style={styles.subtitle}>Votre compagnon D&D</Text>
           </View>
         </View>
       </View>
 
       <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
-        {characters.map((character) => (
-          <TouchableOpacity key={character.id} style={styles.characterCard}>
-            <View style={styles.cardHeader}>
-              <View>
-                <Text style={styles.characterName}>{character.name}</Text>
-                <Text style={styles.characterDetails}>
-                  {character.race} {character.class} - Niveau {character.level}
-                </Text>
-              </View>
-              <View style={styles.levelBadge}>
-                <Text style={styles.levelText}>{character.level}</Text>
-              </View>
+        <View style={styles.welcomeCard}>
+          <Star size={32} color="#F59E0B" />
+          <Text style={styles.welcomeTitle}>Bienvenue dans votre application D&D</Text>
+          <Text style={styles.welcomeText}>
+            Découvrez toutes les fonctionnalités disponibles pour enrichir vos parties de Donjons & Dragons
+          </Text>
+        </View>
+
+        <Text style={styles.sectionTitle}>Fonctionnalités Disponibles</Text>
+        
+        {features.map((feature, index) => (
+          <TouchableOpacity 
+            key={index} 
+            style={styles.featureCard}
+            onPress={() => handleFeaturePress(feature.title)}
+          >
+            <View style={[styles.featureIcon, { backgroundColor: feature.color + '20' }]}>
+              {feature.icon}
             </View>
-            
-            <View style={styles.statsRow}>
-              <View style={styles.statItem}>
-                <Heart size={16} color="#DC2626" />
-                <Text style={styles.statText}>
-                  {character.hp}/{character.maxHp}
-                </Text>
-              </View>
-              <View style={styles.statItem}>
-                <Shield size={16} color="#6B46C1" />
-                <Text style={styles.statText}>CA {character.ac}</Text>
-              </View>
-              <View style={styles.statItem}>
-                <Sword size={16} color="#F59E0B" />
-                <Text style={styles.statText}>Prêt</Text>
-              </View>
+            <View style={styles.featureContent}>
+              <Text style={styles.featureTitle}>{feature.title}</Text>
+              <Text style={styles.featureDescription}>{feature.description}</Text>
             </View>
+            <ArrowRight size={20} color="#6B7280" />
           </TouchableOpacity>
         ))}
 
-        <TouchableOpacity style={styles.addButton} onPress={handleCreateCharacter}>
-          <Plus size={24} color="#FFFFFF" />
-          <Text style={styles.addButtonText}>Créer un Personnage</Text>
-        </TouchableOpacity>
+        <View style={styles.comingSoonCard}>
+          <View style={styles.comingSoonHeader}>
+            <Users size={32} color="#EF4444" />
+            <Text style={styles.comingSoonTitle}>Création de Personnages</Text>
+          </View>
+          <Text style={styles.comingSoonText}>
+            🚧 Cette fonctionnalité arrive bientôt ! 🚧
+          </Text>
+          <Text style={styles.comingSoonDescription}>
+            Nous travaillons actuellement sur un système complet de création de personnages D&D avec :
+          </Text>
+          <View style={styles.featuresList}>
+            <Text style={styles.featureItem}>• Choix de race et classe</Text>
+            <Text style={styles.featureItem}>• Génération de statistiques</Text>
+            <Text style={styles.featureItem}>• Sélection d'équipement de départ</Text>
+            <Text style={styles.featureItem}>• Gestion des sorts et capacités</Text>
+            <Text style={styles.featureItem}>• Sauvegarde et modification</Text>
+          </View>
+        </View>
+
+        <View style={styles.comingSoonCard}>
+          <View style={styles.comingSoonHeader}>
+            <Text style={styles.comingSoonEmoji}>🚀</Text>
+            <Text style={styles.comingSoonTitle}>Bientôt Disponible</Text>
+          </View>
+          
+          <Text style={styles.comingSoonSubtitle}>
+            (si on est fou et qu'on aime les nuits blanches)
+          </Text>
+
+          <Text style={styles.comingSoonDescription}>
+            Et après la création de perso, on va faire ça (en vrai j'ai la flemme mais bon) :
+          </Text>
+
+          <View style={styles.featuresList}>
+            <View style={styles.featureItemRow}>
+              <Text style={styles.featureItemEmoji}>🌐</Text>
+              <Text style={styles.featureItem}>Extension Chrome pour Roll20</Text>
+            </View>
+            <View style={styles.featureItemRow}>
+              <Text style={styles.featureItemEmoji}>📤</Text>
+              <Text style={styles.featureItem}>Import/Export de personnages</Text>
+            </View>
+            <View style={styles.featureItemRow}>
+              <Text style={styles.featureItemEmoji}>👥</Text>
+              <Text style={styles.featureItem}>Mode campagne multi-joueurs</Text>
+            </View>
+            <View style={styles.featureItemRow}>
+              <Text style={styles.featureItemEmoji}>🏰</Text>
+              <Text style={styles.featureItem}>Générateur de donjons</Text>
+            </View>
+          </View>
+
+          <View style={styles.crazyNote}>
+            <Text style={styles.crazyNoteText}>💡 Note : Les développeurs survivent au chocolat chaud ☕</Text>
+          </View>
+        </View>
       </ScrollView>
     </View>
   );
@@ -134,7 +193,80 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     paddingTop: 20,
   },
-  characterCard: {
+  welcomeCard: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 16,
+    padding: 20,
+    marginBottom: 16,
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
+    elevation: 4,
+  },
+  welcomeTitle: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    color: '#1F2937',
+    marginTop: 10,
+    textAlign: 'center',
+  },
+  welcomeText: {
+    fontSize: 16,
+    color: '#6B7280',
+    marginTop: 8,
+    textAlign: 'center',
+  },
+  sectionTitle: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: '#1F2937',
+    marginBottom: 16,
+  },
+  featureCard: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 16,
+    padding: 20,
+    marginBottom: 16,
+    flexDirection: 'row',
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
+    elevation: 4,
+    borderWidth: 1,
+    borderColor: 'transparent',
+  },
+  featureIcon: {
+    width: 50,
+    height: 50,
+    borderRadius: 25,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 15,
+  },
+  featureContent: {
+    flex: 1,
+  },
+  featureTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#1F2937',
+    marginBottom: 4,
+  },
+  featureDescription: {
+    fontSize: 14,
+    color: '#6B7280',
+  },
+  comingSoonCard: {
     backgroundColor: '#FFFFFF',
     borderRadius: 16,
     padding: 20,
@@ -147,73 +279,78 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.1,
     shadowRadius: 8,
     elevation: 4,
-    borderLeftWidth: 4,
-    borderLeftColor: '#6B46C1',
   },
-  cardHeader: {
+  comingSoonHeader: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'flex-start',
-    marginBottom: 16,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 10,
   },
-  characterName: {
+  comingSoonTitle: {
     fontSize: 20,
     fontWeight: 'bold',
     color: '#1F2937',
-    marginBottom: 4,
   },
-  characterDetails: {
+  comingSoonText: {
+    fontSize: 16,
+    color: '#EF4444',
+    fontWeight: 'bold',
+    textAlign: 'center',
+    marginBottom: 10,
+  },
+  comingSoonDescription: {
     fontSize: 14,
     color: '#6B7280',
+    marginBottom: 10,
   },
-  levelBadge: {
-    backgroundColor: '#F59E0B',
-    borderRadius: 20,
-    width: 40,
-    height: 40,
-    justifyContent: 'center',
-    alignItems: 'center',
+  featuresList: {
+    marginBottom: 15,
   },
-  levelText: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    color: '#FFFFFF',
-  },
-  statsRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-  },
-  statItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#F9FAFB',
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-    borderRadius: 12,
-    flex: 1,
-    marginHorizontal: 4,
-  },
-  statText: {
+  featureItem: {
     fontSize: 14,
-    fontWeight: '600',
     color: '#374151',
-    marginLeft: 6,
+    marginBottom: 5,
   },
-  addButton: {
-    backgroundColor: '#6B46C1',
-    borderRadius: 16,
-    padding: 20,
+  featureItemRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'center',
-    marginTop: 8,
-    marginBottom: 100,
+    marginBottom: 5,
   },
-  addButtonText: {
+  featureItemEmoji: {
+    fontSize: 18,
+    marginRight: 8,
+  },
+  crazyNote: {
+    backgroundColor: '#F3E8FF',
+    borderRadius: 12,
+    padding: 15,
+    marginTop: 15,
+    alignItems: 'center',
+  },
+  crazyNoteText: {
+    fontSize: 14,
+    color: '#6B46C1',
+    fontWeight: 'bold',
+  },
+  notifyButton: {
+    backgroundColor: '#6B46C1',
+    borderRadius: 12,
+    paddingVertical: 12,
+    alignItems: 'center',
+  },
+  notifyButtonText: {
     fontSize: 16,
     fontWeight: 'bold',
     color: '#FFFFFF',
-    marginLeft: 8,
   },
-
+  comingSoonEmoji: {
+    fontSize: 24,
+    marginRight: 8,
+  },
+  comingSoonSubtitle: {
+    fontSize: 16,
+    color: '#6B7280',
+    textAlign: 'center',
+    marginBottom: 10,
+  },
 });

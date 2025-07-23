@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, FlatList, TextInput, TouchableOpacity, ActivityIndicator } from 'react-native';
 import { Search, Filter, X, ArrowLeft, ArrowUpDown, Plus, Minus } from 'lucide-react-native';
 import { useLocalSearchParams, router } from 'expo-router';
-import { loadAllCreatures, findCreatureByName, searchCreatures, Creature } from '../utils/bestiaryService';
+import { loadAllCreatures, findCreatureByName, searchCreatures, Creature } from '@/utils/bestiaryService';
 import BestiaryCard from './components/BestiaryCard';
 
 export default function BestiaryScreen() {

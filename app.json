@@ -56,7 +56,7 @@
     },
     "owner": "liloji",
     "assetBundlePatterns": [
-      "assets/data/*.json"
+      "assets/*.json"
     ],
     "runtimeVersion": {
       "policy": "appVersion"

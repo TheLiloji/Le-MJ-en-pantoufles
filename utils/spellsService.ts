@@ -1,4 +1,4 @@
-import spellsData from '../assets/data/sorts_dnd_fr.json';
+import spellsData from '../assets/sorts_dnd_fr.json';
 
 export interface Spell {
   nom: string;

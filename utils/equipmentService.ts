@@ -74,9 +74,9 @@ export interface Poison {
 const EQUIPMENT_STORAGE_KEY = 'user_equipment';
 
 // Import des données JSON
-import equipmentData  from '../assets/data/equipements_dnd.json';
-import magicItemsData from '../assets/data/objets_magiques_dnd_fr.json';
-import poisonsData from '../assets/data/poisons_dnd_fr.json';
+import equipmentData  from '../assets/equipements_dnd.json';
+import magicItemsData from '../assets/objets_magiques_dnd_fr.json';
+import poisonsData from '../assets/poisons_dnd_fr.json';
 
 export const loadEquipment = async (): Promise<EquipmentItem[]> => {
   try {

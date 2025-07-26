@@ -16,12 +16,6 @@
           "armures": {
             "name": "Armures",
             "items": {
-              "sans_armure": {
-                "name": "Sans armure",
-                "ca": 10,
-                "price": 0,
-                "type": "aucune"
-              },
               "armure_matelassee": {
                 "name": "Armure matelassée",
                 "ca": 11,

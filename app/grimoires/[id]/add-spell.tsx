@@ -1,9 +1,12 @@
-import { View, Text, StyleSheet, ScrollView, TextInput, TouchableOpacity, Alert } from 'react-native';
-import { useState, useEffect } from 'react';
+import { View, Text, StyleSheet, TextInput, TouchableOpacity, Alert, FlatList } from 'react-native';
+import { useState, useEffect, useMemo, useCallback } from 'react';
 import { ArrowLeft, Search, Plus, Minus, Zap, Clock, Target } from 'lucide-react-native';
 import { router, useLocalSearchParams } from 'expo-router';
 import { loadAllSpells, searchSpells, getSpellByLevel, getSpellBySchool, getSpellByClass, getAvailableClasses, Spell, isValidDisplayString } from '../../../utils/spellsService';
-import { addSpellToGrimoire, loadGrimoires, Grimoire, removeSpellFromGrimoire } from '../../../utils/grimoireService';
+import { addSpellToGrimoire, loadGrimoires, Grimoire, GrimoireSpell, removeSpellFromGrimoire } from '../../../utils/grimoireService';
+
+// Cache pour les sorts
+let spellsCache: Spell[] | null = null;
 
 export default function AddSpellToGrimoireScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -15,85 +18,123 @@ export default function AddSpellToGrimoireScreen() {
   const [grimoire, setGrimoire] = useState<Grimoire | null>(null);
   const [loading, setLoading] = useState(true);
   const [showFilters, setShowFilters] = useState(false);
+  const [classes, setClasses] = useState<string[]>([]);
 
-  useEffect(() => {
-    loadData();
-  }, [id]);
-
-  const loadData = async () => {
-    try {
-      // Charger les sorts
-      const allSpells = loadAllSpells();
-      setSpells(allSpells);
-      
-      // Charger le grimoire
-      const grimoires = await loadGrimoires();
-      const foundGrimoire = grimoires.find(g => g.id === id);
-      if (foundGrimoire) {
-        setGrimoire(foundGrimoire);
-      }
-    } catch (error) {
-      console.error('Erreur lors du chargement:', error);
-    } finally {
-      setLoading(false);
+  // Charger les sorts une seule fois et les mettre en cache
+  const loadSpellsData = useCallback(async () => {
+    if (spellsCache) {
+      setSpells(spellsCache);
+      return;
     }
-  };
 
-  const loadSpells = () => {
     try {
-      const allSpells = loadAllSpells();
+      const allSpells = await loadAllSpells();
+      spellsCache = allSpells;
       setSpells(allSpells);
     } catch (error) {
       console.error('Erreur lors du chargement des sorts:', error);
-    } finally {
-      setLoading(false);
     }
-  };
+  }, []);
 
-  const filteredSpells = spells.filter(spell => {
-    const matchesSearch = searchQuery === '' || 
-      spell.nom.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      spell.ecole.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      spell.description.toLowerCase().includes(searchQuery.toLowerCase());
+  useEffect(() => {
+    const initializeData = async () => {
+      setLoading(true);
+      
+      // Charger les sorts, le grimoire et les classes en parallèle
+      await Promise.all([
+        loadSpellsData(),
+        loadGrimoires().then(grimoires => {
+          const foundGrimoire = grimoires.find(g => g.id === id);
+          if (foundGrimoire) {
+            setGrimoire(foundGrimoire);
+          }
+        }),
+        getAvailableClasses().then(availableClasses => {
+          setClasses(availableClasses);
+        })
+      ]);
+      
+      setLoading(false);
+    };
 
-    const matchesLevel = selectedLevel === '' || spell.niveau === selectedLevel;
-    const matchesSchool = selectedSchool === '' || spell.ecole.toLowerCase() === selectedSchool.toLowerCase();
-    const matchesClass = selectedClass === '' || 
-      (spell.classes && spell.classes.some(c => c.toLowerCase() === selectedClass.toLowerCase()));
+    initializeData();
+  }, [id, loadSpellsData]);
 
-    return matchesSearch && matchesLevel && matchesSchool && matchesClass;
-  });
+  // Mémoriser les sorts filtrés pour éviter de recalculer à chaque rendu
+  const filteredSpells = useMemo(() => {
+    return spells.filter(spell => {
+      const matchesSearch = searchQuery === '' || 
+        spell.nom.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        spell.ecole.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        spell.description.toLowerCase().includes(searchQuery.toLowerCase());
+
+      const matchesLevel = selectedLevel === '' || spell.niveau === selectedLevel;
+      const matchesSchool = selectedSchool === '' || spell.ecole.toLowerCase() === selectedSchool.toLowerCase();
+      const matchesClass = selectedClass === '' || 
+        (spell.classes && spell.classes.some(c => c.toLowerCase() === selectedClass.toLowerCase()));
+
+      return matchesSearch && matchesLevel && matchesSchool && matchesClass;
+    });
+  }, [spells, searchQuery, selectedLevel, selectedSchool, selectedClass]);
 
   // Vérifier si un sort est déjà dans le grimoire
-  const isSpellInGrimoire = (spell: Spell) => {
+  const isSpellInGrimoire = useCallback((spell: Spell) => {
     if (!grimoire) return false;
     const spellId = `${spell.nom}-${spell.niveau}`;
     return grimoire.sorts.some(s => s.spellId === spellId);
-  };
+  }, [grimoire]);
 
-  const handleAddSpell = async (spell: Spell) => {
+  const handleAddSpell = useCallback(async (spell: Spell) => {
     try {
       await addSpellToGrimoire(id, spell);
-      await loadData(); // Recharger les données pour actualiser l'état
+      // Mettre à jour directement l'état local sans recharger
+      setGrimoire(prevGrimoire => {
+        if (!prevGrimoire) return null;
+        const grimoireSpell: GrimoireSpell = {
+          spellId: `${spell.nom}-${spell.niveau}`,
+          nom: spell.nom,
+          niveau: spell.niveau,
+          ecole: spell.ecole,
+          description: spell.description,
+          temps_incantation: spell.temps_incantation,
+          portee: spell.portee,
+          composantes: spell.composantes,
+          concentration: spell.concentration,
+          rituel: spell.rituel,
+          classes: spell.classes || [],
+          url: spell.url,
+        };
+        return {
+          ...prevGrimoire,
+          sorts: [...prevGrimoire.sorts, grimoireSpell]
+        };
+      });
       Alert.alert('Succès', `"${spell.nom}" ajouté au grimoire !`);
     } catch (error) {
       console.error('Erreur lors de l\'ajout:', error);
       const errorMessage = error instanceof Error ? error.message : 'Impossible d\'ajouter le sort au grimoire';
       Alert.alert('Erreur', errorMessage);
     }
-  };
+  }, [id]);
 
-  const handleRemoveSpell = async (spell: Spell) => {
+  const handleRemoveSpell = useCallback(async (spell: Spell) => {
     try {
       const spellId = `${spell.nom}-${spell.niveau}`;
       await removeSpellFromGrimoire(id, spellId);
-      await loadData(); // Recharger les données pour actualiser l'état
+      // Mettre à jour directement l'état local sans recharger
+      setGrimoire(prevGrimoire => {
+        if (!prevGrimoire) return null;
+        return {
+          ...prevGrimoire,
+          sorts: prevGrimoire.sorts.filter(s => s.spellId !== spellId)
+        };
+      });
       Alert.alert('Succès', `"${spell.nom}" retiré du grimoire !`);
     } catch (error) {
       console.error('Erreur lors de la suppression:', error);
       Alert.alert('Erreur', 'Impossible de retirer le sort du grimoire');
     }
-  };
+  }, [id]);
 
   const levelColors = {
     '0': '#6B7280',
@@ -109,8 +150,126 @@ export default function AddSpellToGrimoireScreen() {
   };
 
   const schools = ['abjuration', 'conjuration', 'divination', 'enchantement', 'évocation', 'illusion', 'invocation', 'nécromancie', 'transmutation'];
-  const classes = getAvailableClasses();
   const levels = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9'];
+
+  // Composant de rendu pour chaque sort (optimisé)
+  const renderSpellItem = useCallback(({ item: spell }: { item: Spell }) => {
+    const inGrimoire = isSpellInGrimoire(spell);
+    
+    return (
+      <TouchableOpacity 
+        style={styles.spellCard}
+        activeOpacity={0.7}
+        onPress={() => router.push({
+          pathname: '/grimoires/[id]/spell/[spellId]',
+          params: { id, spellId: spell.nom + '-' + spell.niveau }
+        })}
+      >
+        <View style={styles.spellHeader}>
+          <View style={styles.spellInfo}>
+            <Text style={styles.spellName}>{spell.nom}</Text>
+            <Text style={styles.spellSchool}>{spell.ecole}</Text>
+          </View>
+          <View style={styles.spellActions}>
+            <View style={[styles.levelBadge, { backgroundColor: levelColors[spell.niveau as keyof typeof levelColors] || '#6B7280' }]}>
+              <Text style={styles.levelText}>{spell.niveau}</Text>
+            </View>
+            <TouchableOpacity 
+              style={[
+                inGrimoire ? styles.removeButton : styles.addButton,
+                inGrimoire && styles.removeButtonActive
+              ]}
+              onPress={(e) => {
+                e.stopPropagation();
+                inGrimoire ? handleRemoveSpell(spell) : handleAddSpell(spell);
+              }}
+            >
+              {inGrimoire ? (
+                <Minus size={16} color="#FFFFFF" />
+              ) : (
+                <Plus size={16} color="#FFFFFF" />
+              )}
+            </TouchableOpacity>
+          </View>
+        </View>
+
+        {isValidDisplayString(spell.description) && (
+          <Text style={styles.spellDescription}>{spell.description.trim()}</Text>
+        )}
+
+        <View style={styles.spellDetails}>
+          {isValidDisplayString(spell.temps_incantation) && (
+            <View style={styles.detailItem}>
+              <Clock size={14} color="#6B7280" />
+              <Text style={styles.detailText}>{spell.temps_incantation.trim()}</Text>
+            </View>
+          )}
+          {isValidDisplayString(spell.portee) && (
+            <View style={styles.detailItem}>
+              <Target size={14} color="#6B7280" />
+              <Text style={styles.detailText}>{spell.portee.trim()}</Text>
+            </View>
+          )}
+          {isValidDisplayString(spell.composantes) && (
+            <View style={styles.detailItem}>
+              <Zap size={14} color="#6B7280" />
+              <Text style={styles.detailText}>{spell.composantes.trim()}</Text>
+            </View>
+          )}
+        </View>
+
+        {spell.classes && spell.classes.length > 0 && (
+          <View style={styles.classesContainer}>
+            <Text style={styles.classesLabel}>Classes :</Text>
+            <View style={styles.classesList}>
+              {spell.classes.map((className, index) => (
+                <View key={index} style={styles.classChip}>
+                  <Text style={styles.classChipText}>{className}</Text>
+                </View>
+              ))}
+            </View>
+          </View>
+        )}
+
+        {(isValidDisplayString(spell.concentration) || isValidDisplayString(spell.rituel)) && (
+          <View style={styles.spellTags}>
+            {isValidDisplayString(spell.concentration) && (
+              <View style={styles.tag}>
+                <Text style={styles.tagText}>Concentration</Text>
+              </View>
+            )}
+            {isValidDisplayString(spell.rituel) && (
+              <View style={styles.tag}>
+                <Text style={styles.tagText}>Rituel</Text>
+              </View>
+            )}
+          </View>
+        )}
+      </TouchableOpacity>
+    );
+  }, [id, isSpellInGrimoire, handleAddSpell, handleRemoveSpell]);
+
+  // Clé unique pour chaque sort
+  const keyExtractor = useCallback((item: Spell) => `${item.nom}-${item.niveau}`, []);
+
+  if (loading) {
+    return (
+      <View style={styles.container}>
+        <View style={styles.header}>
+          <TouchableOpacity 
+            style={styles.backButton} 
+            onPress={() => router.back()}
+          >
+            <ArrowLeft size={24} color="#FFFFFF" />
+          </TouchableOpacity>
+          <Text style={styles.title}>Ajouter des sorts</Text>
+        </View>
+        <View style={styles.loadingContainer}>
+          <Text style={styles.loadingText}>Chargement des sorts...</Text>
+        </View>
+      </View>
+    );
+  }
 
   return (
     <View style={styles.container}>
@@ -240,108 +399,30 @@ export default function AddSpellToGrimoireScreen() {
         </View>
       )}
 
-      <ScrollView style={styles.spellsList} showsVerticalScrollIndicator={false}>
-        {filteredSpells.length === 0 ? (
+      <FlatList
+        data={filteredSpells}
+        renderItem={renderSpellItem}
+        keyExtractor={keyExtractor}
+        style={styles.spellsList}
+        contentContainerStyle={styles.spellsListContent}
+        showsVerticalScrollIndicator={false}
+        removeClippedSubviews={true}
+        maxToRenderPerBatch={10}
+        windowSize={10}
+        initialNumToRender={10}
+        getItemLayout={(data, index) => ({
+          length: 200, // Hauteur approximative d'un item
+          offset: 200 * index,
+          index,
+        })}
+        ListEmptyComponent={
           <View style={styles.emptyState}>
             <Text style={styles.emptyStateText}>
               Aucun sort trouvé avec les filtres actuels
             </Text>
           </View>
-        ) : (
-          filteredSpells.map((spell) => (
-            <TouchableOpacity 
-              key={spell.nom} 
-              style={styles.spellCard}
-              activeOpacity={0.7}
-              onPress={() => router.push({
-                pathname: '/grimoires/[id]/spell/[spellId]',
-                params: { id, spellId: spell.nom + '-' + spell.niveau }
-              })}
-            >
-              <View style={styles.spellHeader}>
-                <View style={styles.spellInfo}>
-                  <Text style={styles.spellName}>{spell.nom}</Text>
-                  <Text style={styles.spellSchool}>{spell.ecole}</Text>
-                </View>
-                <View style={styles.spellActions}>
-                  <View style={[styles.levelBadge, { backgroundColor: levelColors[spell.niveau as keyof typeof levelColors] || '#6B7280' }]}>
-                    <Text style={styles.levelText}>{spell.niveau}</Text>
-                  </View>
-                                     <TouchableOpacity 
-                     style={[
-                       isSpellInGrimoire(spell) ? styles.removeButton : styles.addButton,
-                       isSpellInGrimoire(spell) && styles.removeButtonActive
-                     ]}
-                     onPress={(e) => {
-                       e.stopPropagation(); // Empêcher la navigation
-                       isSpellInGrimoire(spell) ? handleRemoveSpell(spell) : handleAddSpell(spell);
-                     }}
-                   >
-                     {isSpellInGrimoire(spell) ? (
-                       <Minus size={16} color="#FFFFFF" />
-                     ) : (
-                       <Plus size={16} color="#FFFFFF" />
-                     )}
-                   </TouchableOpacity>
-                </View>
-              </View>
-
-                             {isValidDisplayString(spell.description) && (
-                 <Text style={styles.spellDescription}>{spell.description.trim()}</Text>
-               )}
-
-                             <View style={styles.spellDetails}>
-                 {isValidDisplayString(spell.temps_incantation) && (
-                   <View style={styles.detailItem}>
-                     <Clock size={14} color="#6B7280" />
-                     <Text style={styles.detailText}>{spell.temps_incantation.trim()}</Text>
-                   </View>
-                 )}
-                 {isValidDisplayString(spell.portee) && (
-                   <View style={styles.detailItem}>
-                     <Target size={14} color="#6B7280" />
-                     <Text style={styles.detailText}>{spell.portee.trim()}</Text>
-                   </View>
-                 )}
-                 {isValidDisplayString(spell.composantes) && (
-                   <View style={styles.detailItem}>
-                     <Zap size={14} color="#6B7280" />
-                     <Text style={styles.detailText}>{spell.composantes.trim()}</Text>
-                   </View>
-                 )}
-               </View>
-
-              {spell.classes && spell.classes.length > 0 && (
-                <View style={styles.classesContainer}>
-                  <Text style={styles.classesLabel}>Classes :</Text>
-                  <View style={styles.classesList}>
-                    {spell.classes.map((className, index) => (
-                      <View key={index} style={styles.classChip}>
-                        <Text style={styles.classChipText}>{className}</Text>
-                      </View>
-                    ))}
-                  </View>
-                </View>
-              )}
-
-                                              {(isValidDisplayString(spell.concentration) || isValidDisplayString(spell.rituel)) && (
-                   <View style={styles.spellTags}>
-                     {isValidDisplayString(spell.concentration) && (
-                       <View style={styles.tag}>
-                         <Text style={styles.tagText}>Concentration</Text>
-                       </View>
-                     )}
-                     {isValidDisplayString(spell.rituel) && (
-                       <View style={styles.tag}>
-                         <Text style={styles.tagText}>Rituel</Text>
-                       </View>
-                     )}
-                   </View>
-                 )}
-            </TouchableOpacity>
-          ))
-        )}
-      </ScrollView>
+        }
+      />
     </View>
   );
 }
@@ -366,6 +447,15 @@ const styles = StyleSheet.create({
     fontSize: 20,
     fontWeight: 'bold',
     color: '#FFFFFF',
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  loadingText: {
+    fontSize: 16,
+    color: '#6B7280',
   },
   searchContainer: {
     paddingHorizontal: 20,
@@ -458,6 +548,8 @@ const styles = StyleSheet.create({
   },
   spellsList: {
     flex: 1,
+  },
+  spellsListContent: {
     paddingHorizontal: 20,
   },
   emptyState: {

@@ -20,53 +20,15 @@ export interface SavedSpell extends Spell {
 }
 
 let savedSpells: SavedSpell[] = [];
+let spellsCache: Spell[] | null = null;
+let availableClassesCache: string[] | null = null;
 
-export const loadAllSpells = (): Spell[] => {
-  const spells = spellsData as Spell[];
-  // Nettoyer les données pour éviter les chaînes vides
-  return spells.map(spell => {
-    return {
-      ...spell,
-      concentration: spell.concentration?.trim() || '',
-      rituel: spell.rituel?.trim() || '',
-      nom: spell.nom?.trim() || '',
-      ecole: spell.ecole?.trim() || '',
-      temps_incantation: spell.temps_incantation?.trim() || '',
-      portee: spell.portee?.trim() || '',
-      composantes: spell.composantes?.trim() || '',
-      description: spell.description?.trim() || '',
-      url: spell.url?.trim() || '',
-      niveau: spell.niveau?.trim() || '0',
-      classes: spell.classes || [],
-    };
-  }).filter(spell => 
-    spell.nom && 
-    spell.nom.length > 0 && 
-    spell.description && 
-    spell.description.length > 0
-  ).map(spell => {
-    // Nettoyer encore plus strictement les chaînes vides
-    const cleanSpell = { ...spell };
-    
-    // Remplacer les chaînes qui ne contiennent que des espaces ou des points par des chaînes vides
-    const cleanString = (str: string) => {
-      if (!str) return '';
-      const trimmed = str.trim();
-      // Si après trim c'est vide ou ne contient que des points/espaces
-      if (!trimmed || /^[.\s]+$/.test(trimmed) || trimmed === '.') return '';
-      return trimmed;
-    };
-    
-    cleanSpell.concentration = cleanString(spell.concentration);
-    cleanSpell.rituel = cleanString(spell.rituel);
-    cleanSpell.temps_incantation = cleanString(spell.temps_incantation);
-    cleanSpell.portee = cleanString(spell.portee);
-    cleanSpell.composantes = cleanString(spell.composantes);
-    cleanSpell.description = cleanString(spell.description);
-    cleanSpell.url = cleanString(spell.url);
-    
-    return cleanSpell;
-  });
+// Fonction utilitaire pour nettoyer une chaîne (optimisée)
+const cleanString = (str: string | undefined | null): string => {
+  if (!str) return '';
+  const trimmed = str.trim();
+  if (!trimmed || /^[.\s]+$/.test(trimmed) || trimmed === '.') return '';
+  return trimmed;
 };
 
 // Fonction utilitaire pour vérifier si une chaîne est valide pour l'affichage
@@ -79,13 +41,47 @@ export const isValidDisplayString = (str: string | undefined | null): boolean =>
   return true;
 };
 
-// Cette fonction n'est plus nécessaire car les classes viennent directement du JSON
-// const getClassesBySchool = (school: string): string[] => {
-//   // Supprimé car on utilise maintenant les vraies classes du JSON
-// };
+// Traitement unique des sorts avec cache
+const processSpellsData = async (): Promise<Spell[]> => {
+  if (spellsCache) {
+    return spellsCache;
+  }
 
-export const searchSpells = (query: string): Spell[] => {
-  const spells = loadAllSpells();
+  const spells = spellsData as Spell[];
+  
+  // Traitement optimisé en une seule passe
+  const processedSpells = spells
+    .map(spell => ({
+      ...spell,
+      concentration: cleanString(spell.concentration),
+      rituel: cleanString(spell.rituel),
+      nom: cleanString(spell.nom),
+      ecole: cleanString(spell.ecole),
+      temps_incantation: cleanString(spell.temps_incantation),
+      portee: cleanString(spell.portee),
+      composantes: cleanString(spell.composantes),
+      description: cleanString(spell.description),
+      url: cleanString(spell.url),
+      niveau: cleanString(spell.niveau) || '0',
+      classes: spell.classes || [],
+    }))
+    .filter(spell => 
+      spell.nom && 
+      spell.nom.length > 0 && 
+      spell.description && 
+      spell.description.length > 0
+    );
+
+  spellsCache = processedSpells;
+  return processedSpells;
+};
+
+export const loadAllSpells = async (): Promise<Spell[]> => {
+  return processSpellsData();
+};
+
+export const searchSpells = async (query: string): Promise<Spell[]> => {
+  const spells = await loadAllSpells();
   const searchTerm = query.toLowerCase();
   
   return spells.filter(spell => 
@@ -96,26 +92,30 @@ export const searchSpells = (query: string): Spell[] => {
   );
 };
 
-export const getSpellByLevel = (level: string): Spell[] => {
-  const spells = loadAllSpells();
+export const getSpellByLevel = async (level: string): Promise<Spell[]> => {
+  const spells = await loadAllSpells();
   return spells.filter(spell => spell.niveau === level);
 };
 
-export const getSpellBySchool = (school: string): Spell[] => {
-  const spells = loadAllSpells();
+export const getSpellBySchool = async (school: string): Promise<Spell[]> => {
+  const spells = await loadAllSpells();
   return spells.filter(spell => spell.ecole.toLowerCase() === school.toLowerCase());
 };
 
-export const getSpellByClass = (className: string): Spell[] => {
-  const spells = loadAllSpells();
+export const getSpellByClass = async (className: string): Promise<Spell[]> => {
+  const spells = await loadAllSpells();
   return spells.filter(spell => {
     if (!spell.classes) return false;
     return spell.classes.some(c => c.toLowerCase() === className.toLowerCase());
   });
 };
 
-export const getAvailableClasses = (): string[] => {
-  const spells = loadAllSpells();
+export const getAvailableClasses = async (): Promise<string[]> => {
+  if (availableClassesCache) {
+    return availableClassesCache;
+  }
+
+  const spells = await loadAllSpells();
   const allClasses = new Set<string>();
   
   spells.forEach(spell => {
@@ -128,11 +128,13 @@ export const getAvailableClasses = (): string[] => {
     }
   });
   
-  return Array.from(allClasses).sort();
+  const classes = Array.from(allClasses).sort();
+  availableClassesCache = classes;
+  return classes;
 };
 
-export const getSpellsByClassAndLevel = (className: string, level: string): Spell[] => {
-  const spells = getSpellByClass(className);
+export const getSpellsByClassAndLevel = async (className: string, level: string): Promise<Spell[]> => {
+  const spells = await getSpellByClass(className);
   return spells.filter(spell => spell.niveau === level);
 };
 
@@ -160,4 +162,10 @@ export const getSavedSpells = (): SavedSpell[] => {
 
 export const isSpellSaved = (spellName: string): boolean => {
   return savedSpells.some(spell => spell.nom === spellName);
+};
+
+// Fonction pour vider le cache si nécessaire (pour le développement)
+export const clearSpellsCache = (): void => {
+  spellsCache = null;
+  availableClassesCache = null;
 }; 

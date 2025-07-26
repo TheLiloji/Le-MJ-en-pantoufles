@@ -2,8 +2,8 @@ import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Linking, Alert } 
 import { useState, useEffect } from 'react';
 import { ArrowLeft, ExternalLink, Zap, Clock, Target, BookOpen, Users, Tag } from 'lucide-react-native';
 import { router, useLocalSearchParams } from 'expo-router';
-import { loadGrimoires, Grimoire, GrimoireSpell } from '@/utils/grimoireService';
-import { isValidDisplayString, loadAllSpells, Spell } from '@/utils/spellsService';
+import { loadGrimoires, Grimoire, GrimoireSpell } from '../../../../utils/grimoireService';
+import { isValidDisplayString, loadAllSpells, Spell } from '../../../../utils/spellsService';
 
 export default function SpellDetailScreen() {
   const { id, spellId } = useLocalSearchParams<{ id: string; spellId: string }>();

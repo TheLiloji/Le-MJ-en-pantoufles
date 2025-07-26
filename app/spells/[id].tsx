@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Linking } from 'react-native';
 import { ArrowLeft, ExternalLink, Trash2 } from 'lucide-react-native';
 import { router, useLocalSearchParams } from 'expo-router';
-import { getSavedSpells, removeSpellFromSaved, SavedSpell } from '@/utils/spellsService';
+import { getSavedSpells, removeSpellFromSaved, SavedSpell } from '../../utils/spellsService';
 
 export default function SpellDetailScreen() {
   const { id } = useLocalSearchParams();

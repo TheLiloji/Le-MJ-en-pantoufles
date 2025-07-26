@@ -2,9 +2,9 @@ import { View, Text, StyleSheet, ScrollView, ActivityIndicator, TouchableOpacity
 import { ArrowLeft } from 'lucide-react-native';
 import { useLocalSearchParams, router } from 'expo-router';
 import { useState, useEffect } from 'react';
-import { loadMarkdownContent } from '@/utils/loadMarkdown';
-import { getSectionTitle } from '@/utils/sectionHierarchy';
-import { cleanSpecificMarkdown } from '@/utils/markdownCleaner';
+import { loadMarkdownContent } from '../../utils/loadMarkdown';
+import { getSectionTitle } from '../../utils/sectionHierarchy';
+import { cleanSpecificMarkdown } from '../../utils/markdownCleaner';
 import Markdown from 'react-native-markdown-display';
 
 export default function SectionScreen() {

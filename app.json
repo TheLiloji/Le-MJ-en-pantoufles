@@ -57,6 +57,12 @@
     "owner": "liloji",
     "assetBundlePatterns": [
       "assets/data/*.json"
-    ]
+    ],
+    "runtimeVersion": {
+      "policy": "appVersion"
+    },
+    "updates": {
+      "url": "https://u.expo.dev/15ac5739-1df8-4738-a610-ca4173a1d656"
+    }
   }
 }

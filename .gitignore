@@ -40,6 +40,7 @@ yarn-error.*
 *.sqlite3
 storage/
 data/
+!assets/data/**
 local-storage/
 
 # expo specific

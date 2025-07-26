@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { View, Text, StyleSheet, TextInput, TouchableOpacity, Alert, ActivityIndicator } from 'react-native';
 import { ArrowLeft, Package } from 'lucide-react-native';
 import { router } from 'expo-router';
-import { createBackpack } from '@/utils/backpackService';
+import { createBackpack } from '../../utils/backpackService';
 
 export default function CreateBackpackScreen() {
   const [nom, setNom] = useState('');

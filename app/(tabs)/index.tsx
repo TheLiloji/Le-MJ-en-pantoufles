@@ -50,7 +50,7 @@ export default function HomeScreen() {
       <View style={styles.header}>
         <View style={styles.headerContent}>
           <Image 
-            source={require('@/assets/images/LogoMjPantoufles.png')}
+            source={require('../../assets/images/LogoMjPantoufles.png')}
             style={styles.logo}
             resizeMode="contain"
           />

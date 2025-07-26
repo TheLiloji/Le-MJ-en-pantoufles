@@ -10,8 +10,8 @@ import {
   removeItemFromBackpack,
   updateItemQuantity,
   updateBackpack
-} from '@/utils/backpackService';
-import { getRarityColor } from '@/utils/equipmentService';
+} from '../../utils/backpackService';
+import { getRarityColor } from '../../utils/equipmentService';
 
 export default function BackpackDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();

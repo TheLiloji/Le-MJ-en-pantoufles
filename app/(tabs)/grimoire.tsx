@@ -2,8 +2,8 @@ import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image } from 'rea
 import { BookOpen, Users, Dice1, Sword, Map, Shield, Zap, Heart, Target, Scroll, Gem, Crown, Star, Flame, Droplets, Leaf, Mountain, Eye, Brain, Skull, Sparkles, Book, Hammer, Cross, Shield as ShieldIcon, ArrowLeft, ArrowRight, FileText, FolderOpen, Zap as ZapIcon } from 'lucide-react-native';
 import { useState } from 'react';
 import { router } from 'expo-router';
-import { getMainSections, getSubsections, hasSubsections } from '@/utils/sectionHierarchy';
-import { markdownContent } from '@/assets/markdownContent';
+import { getMainSections, getSubsections, hasSubsections } from '../../utils/sectionHierarchy';
+import { markdownContent } from '../../assets/markdownContent';
 
 export default function GrimoireScreen() {
   const [selectedSection, setSelectedSection] = useState<string | null>(null);
@@ -107,7 +107,7 @@ export default function GrimoireScreen() {
       <View style={styles.header}>
         <View style={styles.headerContent}>
           <Image 
-            source={require('@/assets/images/LogoMjPantoufles.png')}
+            source={require('../../assets/images/LogoMjPantoufles.png')}
             style={styles.logo}
             resizeMode="contain"
           />

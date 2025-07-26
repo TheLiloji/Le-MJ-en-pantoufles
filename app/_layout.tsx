@@ -24,7 +24,7 @@ export default function RootLayout() {
     return (
       <View style={styles.loadingContainer}>
         <Image 
-          source={require('@/assets/images/Loading.png')}
+          source={require('../assets/images/Loading.png')}
           style={styles.loadingImage}
           resizeMode="contain"
         />

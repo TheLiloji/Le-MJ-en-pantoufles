@@ -19,7 +19,7 @@ import {
   MagicItem,
   Poison,
   EquipmentData
-} from '@/utils/equipmentService';
+} from '../../utils/equipmentService';
 
 interface EquipmentSearchResult {
   id: string;

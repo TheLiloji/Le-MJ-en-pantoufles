@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, TextInput, TouchableOpacity, Alert, ActivityIndicator } from 'react-native';
 import { ArrowLeft, Settings, Weight, Save } from 'lucide-react-native';
 import { router, useLocalSearchParams, useFocusEffect } from 'expo-router';
-import { loadBackpacks, updateBackpack, Backpack } from '@/utils/backpackService';
+import { loadBackpacks, updateBackpack, Backpack } from '../../../utils/backpackService';
 
 export default function BackpackSettingsScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();

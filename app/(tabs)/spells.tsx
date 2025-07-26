@@ -2,7 +2,7 @@ import { View, Text, StyleSheet, ScrollView, TextInput, TouchableOpacity, Alert,
 import { useState, useEffect } from 'react';
 import { Search, Plus, BookOpen, Trash2, Edit3, Zap } from 'lucide-react-native';
 import { router } from 'expo-router';
-import { loadGrimoires, Grimoire, deleteGrimoire } from '@/utils/grimoireService';
+import { loadGrimoires, Grimoire, deleteGrimoire } from '../../utils/grimoireService';
 
 export default function SpellsScreen() {
   const [searchQuery, setSearchQuery] = useState('');
@@ -85,13 +85,13 @@ export default function SpellsScreen() {
       <View style={styles.header}>
         <View style={styles.headerContent}>
           <Image 
-            source={require('@/assets/images/LogoMjPantoufles.png')}
+            source={require('../../assets/images/LogoMjPantoufles.png')}
             style={styles.logo}
             resizeMode="contain"
           />
           <View style={styles.titleContainer}>
-            <Text style={styles.title}>Grimoires</Text>
-            <Text style={styles.subtitle}>Gérez vos grimoires de sorts</Text>
+        <Text style={styles.title}>Grimoires</Text>
+        <Text style={styles.subtitle}>Gérez vos grimoires de sorts</Text>
           </View>
         </View>
       </View>

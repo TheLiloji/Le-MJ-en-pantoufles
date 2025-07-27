@@ -129,101 +129,129 @@
             "items": {
               "baton": {
                 "name": "Bâton",
-                "damage": "1d6",
+                "damage": "1d6 contondant",
                 "price": 2,
                 "currency": "pa",
-                "type": "corps à corps"
+                "type": "corps à corps",
+                "weight": "2 kg",
+                "properties": "Polyvalente (1d8)"
               },
               "dague": {
                 "name": "Dague",
-                "damage": "1d4",
+                "damage": "1d4 perforant",
                 "price": 2,
                 "currency": "po",
-                "type": "corps à corps"
+                "type": "corps à corps",
+                "weight": "500 g",
+                "properties": "Finesse, légère, lancer (portée 6 m/18 m)"
               },
               "gourdin": {
                 "name": "Gourdin",
-                "damage": "1d4",
+                "damage": "1d4 contondant",
                 "price": 1,
                 "currency": "pa",
-                "type": "corps à corps"
+                "type": "corps à corps",
+                "weight": "1 kg",
+                "properties": "Légère"
               },
               "hachette": {
                 "name": "Hachette",
-                "damage": "1d6",
+                "damage": "1d6 tranchant",
                 "price": 5,
                 "currency": "po",
-                "type": "corps à corps"
+                "type": "corps à corps",
+                "weight": "1 kg",
+                "properties": "Légère, lancer (portée 6 m/18 m)"
               },
               "javeline": {
                 "name": "Javeline",
-                "damage": "1d6",
+                "damage": "1d6 perforant",
                 "price": 5,
                 "currency": "pa",
-                "type": "lancer"
+                "type": "lancer",
+                "weight": "1 kg",
+                "properties": "Lancer (portée 9 m/36 m)"
               },
               "lance": {
                 "name": "Lance",
-                "damage": "1d6",
+                "damage": "1d6 perforant",
                 "price": 1,
                 "currency": "po",
-                "type": "corps à corps"
+                "type": "corps à corps",
+                "weight": "1,5 kg",
+                "properties": "Lancer (portée 6 m/18 m), polyvalente (1d8)"
               },
               "marteau_leger": {
                 "name": "Marteau léger",
-                "damage": "1d4",
+                "damage": "1d4 contondant",
                 "price": 2,
                 "currency": "po",
-                "type": "corps à corps"
+                "type": "corps à corps",
+                "weight": "1 kg",
+                "properties": "Légère, lancer (portée 6 m/18 m)"
               },
               "masse_armes": {
                 "name": "Masse d'armes",
-                "damage": "1d6",
+                "damage": "1d6 contondant",
                 "price": 5,
                 "currency": "po",
-                "type": "corps à corps"
+                "type": "corps à corps",
+                "weight": "2 kg",
+                "properties": "-"
               },
               "massue": {
                 "name": "Massue",
-                "damage": "1d8",
+                "damage": "1d8 contondant",
                 "price": 2,
                 "currency": "pa",
-                "type": "corps à corps"
+                "type": "corps à corps",
+                "weight": "5 kg",
+                "properties": "À deux mains"
               },
               "serpe": {
                 "name": "Serpe",
-                "damage": "1d4",
+                "damage": "1d4 tranchant",
                 "price": 1,
                 "currency": "po",
-                "type": "corps à corps"
+                "type": "corps à corps",
+                "weight": "1 kg",
+                "properties": "Légère"
               },
               "arbalete_legere": {
                 "name": "Arbalète légère",
-                "damage": "1d8",
+                "damage": "1d8 perforant",
                 "price": 25,
                 "currency": "po",
-                "type": "distance"
+                "type": "distance",
+                "weight": "2,5 kg",
+                "properties": "Munitions (portée 24 m/96 m), chargement, à deux mains"
               },
               "arc_court": {
                 "name": "Arc court",
-                "damage": "1d6",
+                "damage": "1d6 perforant",
                 "price": 25,
                 "currency": "po",
-                "type": "distance"
+                "type": "distance",
+                "weight": "1 kg",
+                "properties": "Munitions (portée 24 m/96 m), à deux mains"
               },
               "flechette": {
                 "name": "Fléchette",
-                "damage": "1d4",
+                "damage": "1d4 perforant",
                 "price": 5,
                 "currency": "pc",
-                "type": "lancer"
+                "type": "lancer",
+                "weight": "100 g",
+                "properties": "Finesse, lancer (portée 6 m/18 m)"
               },
               "fronde": {
                 "name": "Fronde",
-                "damage": "1d4",
+                "damage": "1d4 contondant",
                 "price": 1,
                 "currency": "pa",
-                "type": "distance"
+                "type": "distance",
+                "weight": "-",
+                "properties": "Munitions (portée 9 m/36 m)"
               }
             }
           },
@@ -232,164 +260,210 @@
             "items": {
               "cimeterre": {
                 "name": "Cimeterre",
-                "damage": "1d6",
+                "damage": "1d6 tranchant",
                 "price": 25,
                 "currency": "po",
-                "type": "corps à corps"
+                "type": "corps à corps",
+                "weight": "1,5 kg",
+                "properties": "Finesse, légère"
               },
               "coutille": {
                 "name": "Coutille",
-                "damage": "1d10",
-                "price": 10,
+                "damage": "1d10 tranchant",
+                "price": 20,
                 "currency": "po",
-                "type": "corps à corps"
+                "type": "corps à corps",
+                "weight": "3 kg",
+                "properties": "Lourde, allonge, à deux mains"
               },
               "epee_deux_mains": {
                 "name": "Épée à deux mains",
-                "damage": "2d6",
+                "damage": "2d6 tranchant",
                 "price": 50,
                 "currency": "po",
-                "type": "corps à corps"
+                "type": "corps à corps",
+                "weight": "3 kg",
+                "properties": "Lourde, à deux mains"
               },
               "epee_courte": {
                 "name": "Épée courte",
-                "damage": "1d6",
+                "damage": "1d6 perforant",
                 "price": 10,
                 "currency": "po",
-                "type": "corps à corps"
+                "type": "corps à corps",
+                "weight": "1 kg",
+                "properties": "Finesse, légère"
               },
               "epee_longue": {
                 "name": "Épée longue",
-                "damage": "1d8",
+                "damage": "1d8 tranchant",
                 "price": 15,
                 "currency": "po",
-                "type": "corps à corps"
+                "type": "corps à corps",
+                "weight": "1,5 kg",
+                "properties": "Polyvalente (1d10)"
               },
               "fleau_armes": {
                 "name": "Fléau d'armes",
-                "damage": "1d8",
+                "damage": "1d8 contondant",
                 "price": 10,
                 "currency": "po",
-                "type": "corps à corps"
+                "type": "corps à corps",
+                "weight": "1 kg",
+                "properties": "-"
               },
               "fouet": {
                 "name": "Fouet",
-                "damage": "1d4",
+                "damage": "1d4 tranchant",
                 "price": 2,
                 "currency": "po",
-                "type": "corps à corps"
+                "type": "corps à corps",
+                "weight": "1,5 kg",
+                "properties": "Finesse, allonge"
               },
               "hache_deux_mains": {
                 "name": "Hache à deux mains",
-                "damage": "1d12",
+                "damage": "1d12 tranchant",
                 "price": 30,
                 "currency": "po",
-                "type": "corps à corps"
+                "type": "corps à corps",
+                "weight": "3,5 kg",
+                "properties": "Lourde, à deux mains"
               },
               "hache_armes": {
                 "name": "Hache d'armes",
-                "damage": "1d8",
+                "damage": "1d8 tranchant",
                 "price": 10,
                 "currency": "po",
-                "type": "corps à corps"
+                "type": "corps à corps",
+                "weight": "2 kg",
+                "properties": "Polyvalente (1d10)"
               },
               "hallebarde": {
                 "name": "Hallebarde",
-                "damage": "1d10",
+                "damage": "1d10 tranchant",
                 "price": 20,
                 "currency": "po",
-                "type": "corps à corps"
+                "type": "corps à corps",
+                "weight": "3 kg",
+                "properties": "Lourde, allonge, à deux mains"
               },
               "lance_arcon": {
                 "name": "Lance d'arçon",
-                "damage": "1d12",
+                "damage": "1d12 perforant",
                 "price": 10,
                 "currency": "po",
-                "type": "corps à corps"
+                "type": "corps à corps",
+                "weight": "3 kg",
+                "properties": "Allonge, spécial"
               },
               "maillet": {
                 "name": "Maillet",
-                "damage": "2d6",
+                "damage": "2d6 contondant",
                 "price": 10,
                 "currency": "po",
-                "type": "corps à corps"
+                "type": "corps à corps",
+                "weight": "5 kg",
+                "properties": "Lourde, à deux mains"
               },
               "marteau_guerre": {
                 "name": "Marteau de guerre",
-                "damage": "1d8",
+                "damage": "1d8 contondant",
                 "price": 15,
                 "currency": "po",
-                "type": "corps à corps"
+                "type": "corps à corps",
+                "weight": "1 kg",
+                "properties": "Polyvalente (1d10)"
               },
               "morgenstern": {
                 "name": "Morgenstern",
-                "damage": "1d8",
+                "damage": "1d8 perforant",
                 "price": 15,
                 "currency": "po",
-                "type": "corps à corps"
+                "type": "corps à corps",
+                "weight": "2 kg",
+                "properties": "-"
               },
               "pic_guerre": {
                 "name": "Pic de guerre",
-                "damage": "1d8",
+                "damage": "1d8 perforant",
                 "price": 5,
                 "currency": "po",
-                "type": "corps à corps"
+                "type": "corps à corps",
+                "weight": "1 kg",
+                "properties": "-"
               },
               "pique": {
                 "name": "Pique",
-                "damage": "1d10",
+                "damage": "1d10 perforant",
                 "price": 5,
                 "currency": "po",
-                "type": "corps à corps"
+                "type": "corps à corps",
+                "weight": "9 kg",
+                "properties": "Lourde, allonge, à deux mains"
               },
               "rapiere": {
                 "name": "Rapière",
-                "damage": "1d8",
+                "damage": "1d8 perforant",
                 "price": 25,
                 "currency": "po",
-                "type": "corps à corps"
+                "type": "corps à corps",
+                "weight": "1 kg",
+                "properties": "Finesse"
               },
               "trident": {
                 "name": "Trident",
-                "damage": "1d6",
+                "damage": "1d6 perforant",
                 "price": 5,
                 "currency": "po",
-                "type": "corps à corps"
+                "type": "corps à corps",
+                "weight": "2 kg",
+                "properties": "Lancer (portée 6 m/18 m), polyvalente (1d8)"
               },
               "arbalete_poing": {
                 "name": "Arbalète de poing",
-                "damage": "1d6",
+                "damage": "1d6 perforant",
                 "price": 75,
                 "currency": "po",
-                "type": "distance"
+                "type": "distance",
+                "weight": "1,5 kg",
+                "properties": "Munitions (portée 9 m/36 m), légère, chargement"
               },
               "arbalete_lourde": {
                 "name": "Arbalète lourde",
-                "damage": "1d10",
+                "damage": "1d10 perforant",
                 "price": 50,
                 "currency": "po",
-                "type": "distance"
+                "type": "distance",
+                "weight": "9 kg",
+                "properties": "Munitions (portée 30 m/120 m), lourde, chargement, à deux mains"
               },
               "arc_long": {
                 "name": "Arc long",
-                "damage": "1d8",
+                "damage": "1d8 perforant",
                 "price": 50,
                 "currency": "po",
-                "type": "distance"
+                "type": "distance",
+                "weight": "1 kg",
+                "properties": "Munitions (portée 45 m/180 m), lourde, à deux mains"
               },
               "filet": {
                 "name": "Filet",
                 "damage": null,
                 "price": 1,
                 "currency": "po",
-                "type": "lancer"
+                "type": "lancer",
+                "weight": "1,5 kg",
+                "properties": "Spécial, lancer (portée 1,50 m/4,50 m)"
               },
               "sarbacane": {
                 "name": "Sarbacane",
-                "damage": "1",
+                "damage": "1 perforant",
                 "price": 10,
                 "currency": "po",
-                "type": "distance"
+                "type": "distance",
+                "weight": "500 g",
+                "properties": "Munitions (portée 7,50 m/30 m), chargement"
               }
             }
           }

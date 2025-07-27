@@ -195,10 +195,10 @@ export const getItemIcon = (type: string): string => {
     // Armes
     'Arme': 'sword',
     'corps à corps': 'sword',
-    'distance': 'sword',
     'lancer': 'sword',
-    'Armes courantes': 'sword',
+    'Armes courantes': 'swords',
     'Armes de guerre': 'sword',
+    'distance': 'bow',
     
     // Armures
     'Armure': 'shield',
@@ -209,24 +209,60 @@ export const getItemIcon = (type: string): string => {
     'Boucliers': 'shield',
     'Armures': 'shield',
     
-    // Consommables et objets
-    'Consommable': 'gem',
-    'Consommables': 'gem',
-    'Objet merveilleux': 'gem',
-    'Anneau': 'gem',
-    'Baguette': 'gem',
-    'Bâton': 'gem',
-    'Parchemin': 'gem',
-    'Potion': 'gem',
+    // Objets magiques spécifiques
+    'Anneau': 'ring',
+    'Baguette': 'wand-sparkles',
+    'Bâton': 'staff',
+    'Sceptre': 'wand',
+    'Parchemin': 'scroll-text',
+    'Potion': 'flask-conical',
+    'Objet merveilleux': 'wondrous',
+    
+    // Catégories générales
+    'Consommables': 'consumable',
+    'Contenants': 'box',
+    'Instruments de musique': 'guitar',
+    'Jeux': 'dice',
+    'Kits spécialisés': 'wrench',
+    'Outils d\'artisan': 'hammer',
+    'Outils d\'aventure': 'compass',
+    'Véhicules': 'caravan',
+    'Éclairage': 'lightbulb',
+    
+    // Vêtements et accessoires
+    'Vêtement': 'shirt',
+    'Vêtements': 'shirt',
+    'Vêtement léger': 'shirt',
+    'Vêtement lourd': 'shirt',
+    
+    // Jeux et divertissements
+    'Jeu': 'dice',
+    'Divertissement': 'dice',
+    
+    // Instruments
+    'Instrument': 'guitar',
+    'Instruments': 'guitar',
+    'Musique': 'guitar',
+    
+    // Outils et navigation
+    'Outil': 'compass',
+    'Outils': 'compass',
+    'Navigation': 'compass',
+    'Cartographie': 'compass',
+    
+    // Transport
+    'Transport': 'caravan',
+    'Véhicule': 'caravan',
+    'Monture': 'caravan',
     
     // Poisons
-    'ingestion': 'gem',
-    'blessure': 'gem',
-    'contact': 'gem',
-    'inhalation': 'gem',
-    'Plante': 'gem',
-    'Toxine': 'gem',
-    'Mixture': 'gem',
+    'ingestion': 'flask-conical',
+    'blessure': 'syringe',
+    'contact': 'droplet',
+    'inhalation': 'ghost',
+    'Plante': 'brain',
+    'Toxine': 'dna',
+    'Mixture': 'wine',
   };
   
   return iconMap[type] || 'package';

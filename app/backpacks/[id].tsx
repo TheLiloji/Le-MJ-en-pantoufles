@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, FlatList, TouchableOpacity, Alert, ActivityIndicator, Modal, TextInput, Switch } from 'react-native';
-import { ArrowLeft, Plus, Package, Trash2, User, Weight, Calendar, Save, X } from 'lucide-react-native';
+import { ArrowLeft, Plus, Package, Trash2, User, Weight, Calendar, Save, X, Gem, Sword, Shield, ChevronDown, Skull, Eye, Circle, Zap, Crown, FileText, Droplets, Sparkles, ArrowRight, ScrollText, FlaskConical, Heart, Ghost, Dna, Syringe, Square, Brain, Wine, Shirt, Dice1, Guitar, Compass, Caravan, Box, Lightbulb, Wrench, Hammer } from 'lucide-react-native';
 import { router, useLocalSearchParams, useFocusEffect } from 'expo-router';
 import { 
   loadBackpacks, 
@@ -11,7 +11,7 @@ import {
   updateItemQuantity,
   updateBackpack
 } from '../../utils/backpackService';
-import { getRarityColor } from '../../utils/equipmentService';
+import { getRarityColor, getItemIcon } from '../../utils/equipmentService';
 
 export default function BackpackDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -136,12 +136,75 @@ export default function BackpackDetailScreen() {
     }
   };
 
+  const getIcon = (iconType: string) => {
+    switch (iconType) {
+      case 'sword':
+        return <Sword size={20} color="#F59E0B" />;
+      case 'swords':
+        return <Sword size={20} color="#10B981" />;
+      case 'bow':
+        return <ArrowRight size={20} color="#8B5CF6" />;
+      case 'shield':
+        return <Shield size={20} color="#6B46C1" />;
+      case 'gem':
+        return <Gem size={20} color="#DC2626" />;
+      case 'ring':
+        return <Circle size={20} color="#8B5CF6" />;
+      case 'wand-sparkles':
+        return <Sparkles size={20} color="#F59E0B" />;
+      case 'wand':
+        return <Zap size={20} color="#8B5CF6" />;
+      case 'staff':
+        return <Zap size={20} color="#10B981" />;
+      case 'scroll-text':
+        return <ScrollText size={20} color="#8B5CF6" />;
+      case 'flask-conical':
+        return <FlaskConical size={20} color="#EF4444" />;
+      case 'wondrous':
+        return <Gem size={20} color="#8B5CF6" />;
+      case 'consumable':
+        return <FlaskConical size={20} color="#EF4444" />;
+      case 'syringe':
+        return <Syringe size={20} color="#DC2626" />;
+      case 'droplet':
+        return <Droplets size={20} color="#3B82F6" />;
+      case 'ghost':
+        return <Ghost size={20} color="#8B5CF6" />;
+      case 'brain':
+        return <Brain size={20} color="#10B981" />;
+      case 'dna':
+        return <Dna size={20} color="#EF4444" />;
+      case 'wine':
+        return <Wine size={20} color="#8B5CF6" />;
+      case 'shirt':
+        return <Shirt size={20} color="#10B981" />;
+      case 'dice':
+        return <Dice1 size={20} color="#F59E0B" />;
+      case 'guitar':
+        return <Guitar size={20} color="#8B5CF6" />;
+      case 'compass':
+        return <Compass size={20} color="#3B82F6" />;
+      case 'caravan':
+        return <Caravan size={20} color="#F59E0B" />;
+      case 'box':
+        return <Box size={20} color="#8B5CF6" />;
+      case 'lightbulb':
+        return <Lightbulb size={20} color="#F59E0B" />;
+      case 'wrench':
+        return <Wrench size={20} color="#6B7280" />;
+      case 'hammer':
+        return <Hammer size={20} color="#DC2626" />;
+      default:
+        return <Package size={20} color="#6B7280" />;
+    }
+  };
+
   const renderItem = ({ item }: { item: any }) => {
     return (
       <View style={styles.itemCard}>
         <View style={styles.itemHeader}>
           <View style={styles.itemIcon}>
-            <Package size={20} color={getRarityColor(item.rarity)} />
+            {getIcon(getItemIcon(item.type))}
           </View>
           <View style={styles.itemInfo}>
             <Text style={styles.itemName}>{item.name}</Text>

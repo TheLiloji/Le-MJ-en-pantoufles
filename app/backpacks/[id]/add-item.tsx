@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, FlatList, TextInput, TouchableOpacity, ActivityIndicator, Modal, Alert, ScrollView } from 'react-native';
-import { Search, ArrowLeft, Plus, Package, Gem, Sword, Shield, ChevronDown, Skull } from 'lucide-react-native';
+import { Search, ArrowLeft, Plus, Package, Gem, Sword, Shield, ChevronDown, Skull, Eye, Circle, Zap, Crown, FileText, Droplets, Sparkles, ArrowRight, ScrollText, FlaskConical, Heart, Ghost, Dna, Syringe, Square, Brain, Wine, Shirt, Dice1, Guitar, Compass, Caravan, Box, Lightbulb, Wrench, Hammer } from 'lucide-react-native';
 import { router, useLocalSearchParams } from 'expo-router';
 import { 
   loadEquipmentData, 
@@ -147,6 +147,44 @@ export default function AddItemToBackpackScreen() {
   useEffect(() => {
     filterItems();
   }, [searchQuery, equipmentData, magicItems, poisons, activeTab, selectedType]);
+
+  // Initialiser tous les onglets au chargement des données
+  useEffect(() => {
+    if (equipmentData && magicItems.length > 0 && poisons.length > 0) {
+      // Forcer le filtrage pour tous les onglets
+      const currentTab = activeTab;
+      
+      // Filtrer les équipements
+      if (equipmentData) {
+        let results: EquipmentSearchResult[] = [];
+        Object.entries(equipmentData.categories).forEach(([categoryKey, category]) => {
+          if (category.subcategories) {
+            Object.entries(category.subcategories).forEach(([subcategoryKey, subcategory]) => {
+              Object.entries(subcategory.items).forEach(([itemKey, item]) => {
+                results.push({
+                  id: itemKey,
+                  name: item.name,
+                  type: subcategory.name,
+                  category: category.name,
+                  price: item.price,
+                  currency: item.currency,
+                  ca: item.ca,
+                  damage: item.damage || undefined
+                });
+              });
+            });
+          }
+        });
+        setFilteredEquipment(results);
+      }
+
+      // Filtrer les objets magiques
+      setFilteredMagicItems(magicItems);
+
+      // Filtrer les poisons
+      setFilteredPoisons(poisons);
+    }
+  }, [equipmentData, magicItems, poisons]);
 
   const loadData = async () => {
     try {
@@ -408,10 +446,60 @@ export default function AddItemToBackpackScreen() {
     switch (iconType) {
       case 'sword':
         return <Sword size={20} color="#F59E0B" />;
+      case 'swords':
+        return <Sword size={20} color="#10B981" />;
+      case 'bow':
+        return <ArrowRight size={20} color="#8B5CF6" />;
       case 'shield':
         return <Shield size={20} color="#6B46C1" />;
       case 'gem':
         return <Gem size={20} color="#DC2626" />;
+      case 'ring':
+        return <Circle size={20} color="#8B5CF6" />;
+      case 'wand-sparkles':
+        return <Sparkles size={20} color="#F59E0B" />;
+      case 'wand':
+        return <Zap size={20} color="#8B5CF6" />;
+      case 'staff':
+        return <Zap size={20} color="#10B981" />;
+      case 'scroll-text':
+        return <ScrollText size={20} color="#8B5CF6" />;
+      case 'flask-conical':
+        return <FlaskConical size={20} color="#EF4444" />;
+      case 'wondrous':
+        return <Gem size={20} color="#8B5CF6" />;
+      case 'consumable':
+        return <FlaskConical size={20} color="#EF4444" />;
+      case 'syringe':
+        return <Syringe size={20} color="#DC2626" />;
+      case 'droplet':
+        return <Droplets size={20} color="#3B82F6" />;
+      case 'ghost':
+        return <Ghost size={20} color="#8B5CF6" />;
+      case 'brain':
+        return <Brain size={20} color="#10B981" />;
+      case 'dna':
+        return <Dna size={20} color="#EF4444" />;
+      case 'wine':
+        return <Wine size={20} color="#8B5CF6" />;
+      case 'shirt':
+        return <Shirt size={20} color="#10B981" />;
+      case 'dice':
+        return <Dice1 size={20} color="#F59E0B" />;
+      case 'guitar':
+        return <Guitar size={20} color="#8B5CF6" />;
+      case 'compass':
+        return <Compass size={20} color="#3B82F6" />;
+      case 'caravan':
+        return <Caravan size={20} color="#F59E0B" />;
+      case 'box':
+        return <Box size={20} color="#8B5CF6" />;
+      case 'lightbulb':
+        return <Lightbulb size={20} color="#F59E0B" />;
+      case 'wrench':
+        return <Wrench size={20} color="#6B7280" />;
+      case 'hammer':
+        return <Hammer size={20} color="#DC2626" />;
       default:
         return <Package size={20} color="#6B7280" />;
     }
@@ -491,39 +579,51 @@ export default function AddItemToBackpackScreen() {
             <Text style={styles.itemType}>
               {item.type} • {item.rarete.charAt(0).toUpperCase() + item.rarete.slice(1)}
             </Text>
-            {item.description_courte && (
-              <Text style={styles.itemDescription} numberOfLines={2}>
-                {cleanDescription(item.description_courte)}
-              </Text>
+          </View>
+          <View style={styles.itemActions}>
+            <TouchableOpacity 
+              style={styles.infoButton}
+              onPress={() => router.push({
+                pathname: '/magic-items/[id]',
+                params: { id: encodeURIComponent(item.nom) }
+              })}
+            >
+              <Eye size={16} color="#6B7280" />
+            </TouchableOpacity>
+            {currentQuantity === 0 ? (
+              <TouchableOpacity 
+                style={styles.addButton}
+                onPress={() => handleAddMagicItem(item)}
+              >
+                <Plus size={16} color="#FFFFFF" />
+              </TouchableOpacity>
+            ) : (
+              <View style={styles.quantityButtons}>
+                <TouchableOpacity 
+                  style={styles.quantityButton}
+                  onPress={() => handleRemoveQuantity(item.nom, currentQuantity)}
+                >
+                  <Text style={styles.quantityButtonText}>-</Text>
+                </TouchableOpacity>
+                <Text style={styles.quantityText}>{currentQuantity}</Text>
+                <TouchableOpacity 
+                  style={styles.quantityButton}
+                  onPress={() => handleAddQuantity(item.nom, currentQuantity)}
+                >
+                  <Text style={styles.quantityButtonText}>+</Text>
+                </TouchableOpacity>
+              </View>
             )}
           </View>
-          {currentQuantity === 0 ? (
-            <TouchableOpacity 
-              style={styles.addButton}
-              onPress={() => handleAddMagicItem(item)}
-            >
-              <Plus size={16} color="#FFFFFF" />
-            </TouchableOpacity>
-          ) : (
-            <View style={styles.quantityButtons}>
-              <TouchableOpacity 
-                style={styles.quantityButton}
-                onPress={() => handleRemoveQuantity(item.nom, currentQuantity)}
-              >
-                <Text style={styles.quantityButtonText}>-</Text>
-              </TouchableOpacity>
-              <Text style={styles.quantityText}>{currentQuantity}</Text>
-              <TouchableOpacity 
-                style={styles.quantityButton}
-                onPress={() => handleAddQuantity(item.nom, currentQuantity)}
-              >
-                <Text style={styles.quantityButtonText}>+</Text>
-              </TouchableOpacity>
-            </View>
-          )}
         </View>
 
-        {item.description_longue && item.description_longue.trim() !== '' && (
+        {item.description_courte && item.description_courte.trim() !== '' ? (
+          <View style={styles.descriptionContainer}>
+            <Text style={styles.itemDescription} numberOfLines={2}>
+              {cleanDescription(item.description_courte)}
+            </Text>
+          </View>
+        ) : item.description_longue && item.description_longue.trim() !== '' && (
           <View style={styles.descriptionContainer}>
             <Text style={styles.itemDescription} numberOfLines={3}>
               {cleanDescription(item.description_longue)}
@@ -540,7 +640,7 @@ export default function AddItemToBackpackScreen() {
       <View style={styles.itemCard}>
         <View style={styles.itemHeader}>
           <View style={styles.itemIcon}>
-            <Skull size={20} color="#DC2626" />
+            {getIcon(getItemIcon(item.type))}
           </View>
           <View style={styles.itemInfo}>
             <Text style={styles.itemName}>{item.nom}</Text>
@@ -590,7 +690,7 @@ export default function AddItemToBackpackScreen() {
       onRequestClose={() => setShowTypeModal(false)}
     >
       <View style={styles.modalOverlay}>
-        <View style={styles.modalContent}>
+        <View style={styles.customModalContent}>
           <View style={styles.modalHeader}>
             <Text style={styles.modalTitle}>Filtrer par type</Text>
             <TouchableOpacity onPress={() => setShowTypeModal(false)}>
@@ -803,9 +903,10 @@ export default function AddItemToBackpackScreen() {
       {/* Modal pour objet personnalisé */}
       <Modal
         visible={showCustomModal}
-        animationType="slide"
+        animationType="fade"
         transparent={true}
         onRequestClose={() => setShowCustomModal(false)}
+        statusBarTranslucent={true}
       >
         <View style={styles.modalOverlay}>
           <View style={styles.customModalContent}>
@@ -1129,12 +1230,22 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(0, 0, 0, 0.5)',
     justifyContent: 'center',
     alignItems: 'center',
+    paddingHorizontal: 20,
   },
-  modalContent: {
+  customModalContent: {
     backgroundColor: '#FFFFFF',
     borderRadius: 16,
-    width: '80%',
-    maxHeight: '70%',
+    width: '100%',
+    maxHeight: '90%',
+    padding: 20,
+    elevation: 5,
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
   },
   modalHeader: {
     flexDirection: 'row',
@@ -1283,13 +1394,7 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     marginLeft: 8,
   },
-  customModalContent: {
-    backgroundColor: '#FFFFFF',
-    borderRadius: 16,
-    width: '90%',
-    maxHeight: '85%',
-    padding: 20,
-  },
+
   customForm: {
     flex: 1,
     marginTop: 10,
@@ -1394,5 +1499,15 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     paddingTop: 12,
     paddingBottom: 12,
+  },
+  itemActions: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  infoButton: {
+    padding: 4,
+    borderRadius: 8,
+    backgroundColor: '#F3F4F6',
   },
 }); 

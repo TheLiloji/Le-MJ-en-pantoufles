@@ -23,10 +23,6 @@ export default function CreateGrimoireScreen() {
         pathname: '/grimoires/[id]',
         params: { id: newGrimoire.id }
       });
-      Alert.alert(
-        'Succès',
-        `Grimoire "${newGrimoire.nom}" créé avec succès !`
-      );
     } catch (error) {
       console.error('Erreur lors de la création:', error);
       Alert.alert('Erreur', 'Impossible de créer le grimoire');

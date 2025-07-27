@@ -97,7 +97,6 @@ export default function AddItemToBackpackScreen() {
         if (updatedBackpack) {
           setBackpack(updatedBackpack);
         }
-        Alert.alert('Succès', `Quantité de ${itemName} augmentée`);
       } catch (error) {
         console.error('Erreur lors de la mise à jour:', error);
         Alert.alert('Erreur', 'Impossible de mettre à jour la quantité');
@@ -119,7 +118,6 @@ export default function AddItemToBackpackScreen() {
         if (updatedBackpack) {
           setBackpack(updatedBackpack);
         }
-        Alert.alert('Succès', `Quantité de ${itemName} diminuée`);
       } catch (error) {
         console.error('Erreur lors de la mise à jour:', error);
         Alert.alert('Erreur', 'Impossible de mettre à jour la quantité');
@@ -134,7 +132,6 @@ export default function AddItemToBackpackScreen() {
         if (updatedBackpack) {
           setBackpack(updatedBackpack);
         }
-        Alert.alert('Succès', `${itemName} retiré du sac à dos`);
       } catch (error) {
         console.error('Erreur lors de la suppression:', error);
         Alert.alert('Erreur', 'Impossible de retirer l\'objet');
@@ -269,21 +266,18 @@ export default function AddItemToBackpackScreen() {
       return;
     }
 
-    try {
-      await addItemToBackpack(id!, newItem);
-      // Recharger les données du sac à dos
-      const updatedBackpacks = await loadBackpacks();
-      const updatedBackpack = updatedBackpacks.find(b => b.id === id);
-      if (updatedBackpack) {
-        setBackpack(updatedBackpack);
+          try {
+        await addItemToBackpack(id!, newItem);
+        // Recharger les données du sac à dos
+        const updatedBackpacks = await loadBackpacks();
+        const updatedBackpack = updatedBackpacks.find(b => b.id === id);
+        if (updatedBackpack) {
+          setBackpack(updatedBackpack);
+        }
+      } catch (error) {
+        console.error('Erreur lors de l\'ajout:', error);
+        Alert.alert('Erreur', 'Impossible d\'ajouter l\'objet');
       }
-      Alert.alert('Succès', `${item.name} ajouté au sac à dos`, [
-        { text: 'OK', onPress: () => router.back() }
-      ]);
-    } catch (error) {
-      console.error('Erreur lors de l\'ajout:', error);
-      Alert.alert('Erreur', 'Impossible d\'ajouter l\'objet');
-    }
   };
 
   const handleAddMagicItem = async (item: MagicItem) => {
@@ -314,9 +308,6 @@ export default function AddItemToBackpackScreen() {
       if (updatedBackpack) {
         setBackpack(updatedBackpack);
       }
-      Alert.alert('Succès', `${item.nom} ajouté au sac à dos`, [
-        { text: 'OK', onPress: () => router.back() }
-      ]);
     } catch (error) {
       console.error('Erreur lors de l\'ajout:', error);
       Alert.alert('Erreur', 'Impossible d\'ajouter l\'objet');
@@ -351,9 +342,6 @@ export default function AddItemToBackpackScreen() {
       if (updatedBackpack) {
         setBackpack(updatedBackpack);
       }
-      Alert.alert('Succès', `${item.nom} ajouté au sac à dos`, [
-        { text: 'OK', onPress: () => router.back() }
-      ]);
     } catch (error) {
       console.error('Erreur lors de l\'ajout:', error);
       Alert.alert('Erreur', 'Impossible d\'ajouter l\'objet');
@@ -408,17 +396,8 @@ export default function AddItemToBackpackScreen() {
       });
       setShowCustomModal(false);
       
-      Alert.alert('Succès', `${customItem.name} ajouté au sac à dos`, [
-        { 
-          text: 'OK', 
-          onPress: () => {
-            // Recharger les données et retourner au sac à dos
-            loadData().then(() => {
-              router.back();
-            });
-          }
-        }
-      ]);
+      // Recharger les données
+      loadData();
     } catch (error) {
       console.error('Erreur lors de l\'ajout:', error);
       Alert.alert('Erreur', 'Impossible d\'ajouter l\'objet');
@@ -671,103 +650,94 @@ export default function AddItemToBackpackScreen() {
           <ArrowLeft size={24} color="#FFFFFF" />
         </TouchableOpacity>
         <Text style={styles.title}>Ajouter un objet</Text>
-        <Text style={styles.subtitle}>
-          {activeTab === 'equipment' ? filteredEquipment.length : 
-           activeTab === 'magic' ? filteredMagicItems.length : 
-           activeTab === 'custom' ? 'Custom' :
-           filteredPoisons.length} éléments trouvés
-        </Text>
+        
+        {/* Capacité intégrée dans le header */}
+        {backpack && (
+          <View style={styles.capacityContainer}>
+            <View style={styles.capacityHeader}>
+              <Text style={styles.capacityLabel}>
+                {backpack.capacitePrincipale === 'weight' ? 'Poids' :
+                 backpack.capacitePrincipale === 'value' ? 'Valeur' :
+                 'Objets'}
+              </Text>
+              <Text style={styles.capacityPercentage}>
+                {Math.round(
+                  backpack.capacitePrincipale === 'weight' ? (getBackpackStats(backpack)?.weightPercentage || 0) :
+                  backpack.capacitePrincipale === 'value' ? (getBackpackStats(backpack)?.valuePercentage || 0) :
+                  (getBackpackStats(backpack)?.itemsPercentage || 0)
+                )}%
+              </Text>
+            </View>
+            <View style={styles.capacityBar}>
+              <View 
+                style={[
+                  styles.capacityFill, 
+                  { 
+                    width: `${Math.min(
+                      backpack.capacitePrincipale === 'weight' ? (getBackpackStats(backpack)?.weightPercentage || 0) :
+                      backpack.capacitePrincipale === 'value' ? (getBackpackStats(backpack)?.valuePercentage || 0) :
+                      (getBackpackStats(backpack)?.itemsPercentage || 0), 
+                      100
+                    )}%` 
+                  },
+                  (backpack.capacitePrincipale === 'weight' ? (getBackpackStats(backpack)?.weightPercentage || 0) :
+                   backpack.capacitePrincipale === 'value' ? (getBackpackStats(backpack)?.valuePercentage || 0) :
+                   (getBackpackStats(backpack)?.itemsPercentage || 0)) > 80 ? styles.capacityFillWarning : null
+                ]} 
+              />
+            </View>
+          </View>
+        )}
       </View>
 
-      {/* Barre de progression du sac à dos */}
-      {backpack && (
-        <View style={styles.capacityContainer}>
-          <View style={styles.capacityHeader}>
-            <Text style={styles.capacityLabel}>
-              {backpack.capacitePrincipale === 'weight' ? 'Capacité en Poids' :
-               backpack.capacitePrincipale === 'value' ? 'Capacité en Valeur' :
-               'Capacité en Objets'}
-            </Text>
-            <Text style={styles.capacityPercentage}>
-              {Math.round(
-                backpack.capacitePrincipale === 'weight' ? (getBackpackStats(backpack)?.weightPercentage || 0) :
-                backpack.capacitePrincipale === 'value' ? (getBackpackStats(backpack)?.valuePercentage || 0) :
-                (getBackpackStats(backpack)?.itemsPercentage || 0)
-              )}%
-            </Text>
-          </View>
-          <View style={styles.capacityBar}>
-            <View 
-              style={[
-                styles.capacityFill, 
-                { 
-                  width: `${Math.min(
-                    backpack.capacitePrincipale === 'weight' ? (getBackpackStats(backpack)?.weightPercentage || 0) :
-                    backpack.capacitePrincipale === 'value' ? (getBackpackStats(backpack)?.valuePercentage || 0) :
-                    (getBackpackStats(backpack)?.itemsPercentage || 0), 
-                    100
-                  )}%` 
-                },
-                (backpack.capacitePrincipale === 'weight' ? (getBackpackStats(backpack)?.weightPercentage || 0) :
-                 backpack.capacitePrincipale === 'value' ? (getBackpackStats(backpack)?.valuePercentage || 0) :
-                 (getBackpackStats(backpack)?.itemsPercentage || 0)) > 80 ? styles.capacityFillWarning : null
-              ]} 
-            />
-          </View>
-        </View>
-      )}
-
-      <View style={styles.searchContainer}>
+      {/* Barre de recherche et filtre combinés */}
+      <View style={styles.searchFilterContainer}>
         <View style={styles.searchBox}>
-          <Search size={20} color="#6B7280" />
+          <Search size={18} color="#6B7280" />
           <TextInput
             style={styles.searchInput}
-            placeholder="Rechercher un équipement..."
+            placeholder="Rechercher..."
             value={searchQuery}
             onChangeText={setSearchQuery}
             placeholderTextColor="#9CA3AF"
           />
         </View>
-      </View>
-
-      {/* Filtre par type */}
-      <View style={styles.filterContainer}>
         <TouchableOpacity 
           style={styles.filterButton}
           onPress={() => setShowTypeModal(true)}
         >
           <Text style={styles.filterButtonText}>
-            {selectedType === 'all' ? 'Tous les types' : selectedType}
+            {selectedType === 'all' ? 'Tous' : selectedType}
           </Text>
-          <ChevronDown size={16} color="#6B7280" />
+          <ChevronDown size={14} color="#6B7280" />
         </TouchableOpacity>
       </View>
 
-      {/* Onglets */}
+      {/* Onglets compacts */}
       <View style={styles.tabContainer}>
         <TouchableOpacity 
           style={[styles.tab, activeTab === 'equipment' && styles.tabActive]}
           onPress={() => setActiveTab('equipment')}
         >
-          <Package size={16} color={activeTab === 'equipment' ? '#F59E0B' : '#6B7280'} />
+          <Package size={14} color={activeTab === 'equipment' ? '#F59E0B' : '#6B7280'} />
           <Text style={[styles.tabText, activeTab === 'equipment' && styles.tabTextActive]}>
-            Équipements ({filteredEquipment.length})
+            Équip. ({filteredEquipment.length})
           </Text>
         </TouchableOpacity>
         <TouchableOpacity 
           style={[styles.tab, activeTab === 'magic' && styles.tabActive]}
           onPress={() => setActiveTab('magic')}
         >
-          <Gem size={16} color={activeTab === 'magic' ? '#F59E0B' : '#6B7280'} />
+          <Gem size={14} color={activeTab === 'magic' ? '#F59E0B' : '#6B7280'} />
           <Text style={[styles.tabText, activeTab === 'magic' && styles.tabTextActive]}>
-            Objets Magiques ({filteredMagicItems.length})
+            Magique ({filteredMagicItems.length})
           </Text>
         </TouchableOpacity>
         <TouchableOpacity 
           style={[styles.tab, activeTab === 'poisons' && styles.tabActive]}
           onPress={() => setActiveTab('poisons')}
         >
-          <Skull size={16} color={activeTab === 'poisons' ? '#F59E0B' : '#6B7280'} />
+          <Skull size={14} color={activeTab === 'poisons' ? '#F59E0B' : '#6B7280'} />
           <Text style={[styles.tabText, activeTab === 'poisons' && styles.tabTextActive]}>
             Poisons ({filteredPoisons.length})
           </Text>
@@ -776,7 +746,7 @@ export default function AddItemToBackpackScreen() {
           style={[styles.tab, activeTab === 'custom' && styles.tabActive]}
           onPress={() => setActiveTab('custom')}
         >
-          <Plus size={16} color={activeTab === 'custom' ? '#F59E0B' : '#6B7280'} />
+          <Plus size={14} color={activeTab === 'custom' ? '#F59E0B' : '#6B7280'} />
           <Text style={[styles.tabText, activeTab === 'custom' && styles.tabTextActive]}>
             Custom
           </Text>
@@ -971,15 +941,15 @@ const styles = StyleSheet.create({
   },
   header: {
     backgroundColor: '#F59E0B',
-    paddingTop: 60,
-    paddingBottom: 30,
+    paddingTop: 50,
+    paddingBottom: 20,
     paddingHorizontal: 20,
     borderBottomLeftRadius: 25,
     borderBottomRightRadius: 25,
   },
   backButton: {
     position: 'absolute',
-    top: 60,
+    top: 50,
     left: 20,
     zIndex: 1,
   },
@@ -995,25 +965,15 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     marginTop: 8,
   },
-  searchContainer: {
-    paddingHorizontal: 20,
-    paddingTop: 20,
-  },
   searchBox: {
+    flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#FFFFFF',
-    borderRadius: 12,
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 1,
-    },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 2,
+    backgroundColor: '#F9FAFB',
+    borderRadius: 8,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    marginRight: 8,
   },
   searchInput: {
     flex: 1,
@@ -1021,26 +981,15 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: '#374151',
   },
-  filterContainer: {
-    paddingHorizontal: 20,
-    paddingTop: 16,
-  },
   filterButton: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    backgroundColor: '#FFFFFF',
-    borderRadius: 12,
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 1,
-    },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 2,
+    backgroundColor: '#F9FAFB',
+    borderRadius: 8,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    minWidth: 80,
   },
   filterButtonText: {
     fontSize: 16,
@@ -1050,16 +999,16 @@ const styles = StyleSheet.create({
   tabContainer: {
     flexDirection: 'row',
     paddingHorizontal: 20,
-    paddingTop: 16,
+    paddingTop: 12,
   },
   tab: {
     flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    paddingVertical: 12,
-    paddingHorizontal: 8,
-    borderRadius: 8,
+    paddingVertical: 8,
+    paddingHorizontal: 6,
+    borderRadius: 6,
     marginHorizontal: 2,
     backgroundColor: '#F3F4F6',
   },
@@ -1078,7 +1027,7 @@ const styles = StyleSheet.create({
   itemsList: {
     flex: 1,
     paddingHorizontal: 20,
-    paddingTop: 16,
+    paddingTop: 12,
   },
   itemsListContent: {
     paddingBottom: 20,
@@ -1253,40 +1202,31 @@ const styles = StyleSheet.create({
     marginHorizontal: 10,
   },
   capacityContainer: {
-    backgroundColor: '#FFFFFF',
-    padding: 20,
-    borderRadius: 16,
-    marginHorizontal: 20,
-    marginTop: 16,
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.1,
-    shadowRadius: 8,
-    elevation: 4,
+    backgroundColor: 'rgba(255, 255, 255, 0.2)',
+    padding: 12,
+    borderRadius: 12,
+    marginTop: 12,
   },
   capacityHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 8,
+    marginBottom: 6,
   },
   capacityLabel: {
-    fontSize: 16,
+    fontSize: 14,
     fontWeight: '600',
-    color: '#374151',
+    color: '#FFFFFF',
   },
   capacityPercentage: {
-    fontSize: 16,
+    fontSize: 14,
     fontWeight: '600',
-    color: '#F59E0B',
+    color: '#FEF3C7',
   },
   capacityBar: {
-    height: 8,
-    backgroundColor: '#E5E7EB',
-    borderRadius: 4,
+    height: 6,
+    backgroundColor: 'rgba(255, 255, 255, 0.3)',
+    borderRadius: 3,
     overflow: 'hidden',
   },
   capacityFill: {
@@ -1446,5 +1386,13 @@ const styles = StyleSheet.create({
   },
   descriptionContainer: {
     marginTop: 8,
+  },
+  searchFilterContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: 20,
+    paddingTop: 12,
+    paddingBottom: 12,
   },
 }); 

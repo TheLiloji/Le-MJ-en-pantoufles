@@ -109,7 +109,6 @@ export default function AddSpellToGrimoireScreen() {
           sorts: [...prevGrimoire.sorts, grimoireSpell]
         };
       });
-      Alert.alert('Succès', `"${spell.nom}" ajouté au grimoire !`);
     } catch (error) {
       console.error('Erreur lors de l\'ajout:', error);
       const errorMessage = error instanceof Error ? error.message : 'Impossible d\'ajouter le sort au grimoire';
@@ -129,7 +128,6 @@ export default function AddSpellToGrimoireScreen() {
           sorts: prevGrimoire.sorts.filter(s => s.spellId !== spellId)
         };
       });
-      Alert.alert('Succès', `"${spell.nom}" retiré du grimoire !`);
     } catch (error) {
       console.error('Erreur lors de la suppression:', error);
       Alert.alert('Erreur', 'Impossible de retirer le sort du grimoire');

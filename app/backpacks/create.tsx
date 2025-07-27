@@ -22,11 +22,6 @@ export default function CreateBackpackScreen() {
       
       // Redirection vers la page Equipment après la création
       router.push('/(tabs)/equipment');
-      
-      Alert.alert(
-        'Succès',
-        `Sac à dos "${newBackpack.nom}" créé avec succès !`
-      );
     } catch (error) {
       console.error('Erreur lors de la création:', error);
       Alert.alert('Erreur', 'Impossible de créer le sac à dos');
